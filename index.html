@@ -25,7 +25,7 @@
         }
 
         .screen {
-            display: none; /* 基本は非表示 */
+            display: none;
             background: var(--paper);
             width: 90%;
             max-width: 500px;
@@ -34,15 +34,13 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.7);
             border: 3px double var(--gold);
             text-align: center;
-            animation: fadeIn 0.5s;
+            animation: fadeIn 0.3s;
         }
 
-        .active { display: block; } /* activeクラスがついた画面だけ表示 */
+        .active { display: block; }
 
-        h1 { color: #333; border-bottom: 2px solid var(--gold); padding-bottom: 10px; }
-        p { line-height: 1.6; }
+        h1, h2 { color: #333; border-bottom: 2px solid var(--gold); padding-bottom: 10px; }
 
-        /* ボタンデザイン共通 */
         .menu-btn {
             background: #333;
             color: white;
@@ -57,17 +55,25 @@
         }
         .menu-btn:hover { background: var(--gold); }
 
-        /* ゲーム画面専用 */
-        #timer-bar {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--wrong);
-            margin-bottom: 10px;
+        /* タイマーの視覚化 */
+        #timer-container {
+            width: 100%;
+            height: 10px;
+            background: #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        #timer-bar-fill {
+            height: 100%;
+            width: 100%;
+            background: var(--gold);
+            transition: width 1s linear;
         }
 
         .portrait-frame {
-            width: 150px;
-            height: 150px;
+            width: 140px;
+            height: 140px;
             margin: 0 auto 15px;
             border: 5px solid #333;
             background: #ccc;
@@ -76,13 +82,35 @@
         }
         .portrait-frame img { width: 100%; height: 100%; object-fit: cover; }
 
+        .speech-bubble {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 15px;
+            min-height: 80px;
+            text-align: left;
+        }
+
+        .info-box {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #aaa;
+            font-size: 0.9rem;
+            color: #555;
+            display: block;
+        }
+
         #user-answer {
             width: 80%;
             padding: 12px;
             font-size: 1.1rem;
             margin-bottom: 10px;
             text-align: center;
+            border: 2px solid #ccc;
         }
+
+        #next-btn { background: var(--gold); display: none; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .shake { animation: shake 0.4s; }
@@ -93,150 +121,184 @@
 
     <div id="home-screen" class="screen active">
         <h1>歴史肖像画クイズ</h1>
-        <p>肖像画の人物からの問いに答えよ。<br>すべての時代を制覇できるか？</p>
+        <p>人物の問いに素早く答えよ。<br>1問ごとに制限時間があるぞ！</p>
         <button class="menu-btn" onclick="showScreen('time-screen')">挑戦を始める</button>
     </div>
 
     <div id="time-screen" class="screen">
-        <h2>制限時間を選択</h2>
-        <button class="menu-btn" onclick="setTimer(30)">30秒（短期決戦）</button>
-        <button class="menu-btn" onclick="setTimer(60)">60秒（じっくり）</button>
+        <h2>1問あたりの時間</h2>
+        <button class="menu-btn" onclick="setTimerConfig(30)">30秒（ノーマル）</button>
+        <button class="menu-btn" onclick="setTimerConfig(15)">15秒（エキスパート）</button>
     </div>
 
     <div id="era-screen" class="screen">
         <h2>時代を選択</h2>
         <button class="menu-btn" onclick="startGame('sengoku')">戦国・江戸時代</button>
-        <button class="menu-btn" onclick="startGame('ancient')">古代・中世（世界/日本）</button>
+        <button class="menu-btn" onclick="startGame('ancient')">古代・中世</button>
     </div>
 
     <div id="game-screen" class="screen">
-        <div id="timer-bar">残り時間: --</div>
-        <div id="game-progress" style="font-size: 0.8rem; color: #666;"></div>
+        <div id="timer-container"><div id="timer-bar-fill"></div></div>
+        <div id="game-progress" style="font-size: 0.8rem; margin-bottom: 5px;"></div>
+        
         <div class="portrait-frame">
             <img id="char-img" src="" alt="">
         </div>
-        <div id="dialogue" style="min-height: 80px; margin-bottom: 15px;"></div>
-        <input type="text" id="user-answer" placeholder="答えを入力" autocomplete="off">
-        <button id="submit-btn" class="menu-btn" onclick="checkAnswer()">回答する</button>
-        <button id="next-btn" class="menu-btn" style="display:none; background:var(--gold);" onclick="nextQuestion()">次の問題へ</button>
+
+        <div class="speech-bubble" id="dialogue"></div>
+
+        <div id="input-area">
+            <input type="text" id="user-answer" placeholder="答えを入力" autocomplete="off">
+            <button id="submit-btn" class="menu-btn" onclick="processAnswer('manual')">回答する</button>
+        </div>
+        
+        <button id="next-btn" class="menu-btn" onclick="nextQuestion()">次の問題へ →</button>
     </div>
 
     <div id="result-screen" class="screen">
         <h1>結果発表</h1>
-        <p id="final-score" style="font-size: 1.5rem; font-weight: bold;"></p>
+        <p id="final-score" style="font-size: 1.3rem; line-height: 1.8;"></p>
         <button class="menu-btn" onclick="location.reload()">ホームに戻る</button>
     </div>
 
 <script>
-    // --- クイズデータ ---
     const allQuizData = {
         sengoku: [
-            { name: "織田信長", img: "nobunaga.jpg", msg: "「楽市楽座」を最初に行った城下町は？", answers: ["岐阜", "岐阜城", "ぎふ"], info: "1567年に発布されました。" },
-            { name: "徳川家康", img: "ieyasu.jpg", msg: "征夷大将軍に任命され、江戸幕府を開いたのは西暦何年？", answers: ["1603", "1603年"], info: "関ヶ原の戦いの3年後です。" }
+            { name: "織田信長", img: "nobunaga.jpg", msg: "私が「楽市楽座」を最初に行った城下町はどこか？", answers: ["岐阜", "岐阜城", "ぎふ"], info: "解説：1567年、信長は斎藤氏を滅ぼした後に「岐阜」と改称。商売の自由を認める楽市楽座をここから始めました。" },
+            { name: "徳川家康", img: "ieyasu.jpg", msg: "私が江戸幕府を開いたのは西暦何年か？", answers: ["1603", "1603年"], info: "解説：1600年の関ヶ原の戦いで勝利した後、1603年に征夷大将軍に任ぜられました。" }
         ],
         ancient: [
-            { name: "クレオパトラ", img: "cleopatra.jpg", msg: "プトレマイオス朝最後の女王である私の国はどこ？", answers: ["エジプト", "古代エジプト"], info: "ローマの属州となりました。" },
-            { name: "聖徳太子", img: "shotoku.jpg", msg: "私が制定した、日本最初の憲法といえば？", answers: ["十七条憲法", "17条憲法"], info: "推古天皇の摂政として活躍しました。" }
+            { name: "クレオパトラ", img: "cleopatra.jpg", msg: "私の死後、エジプトを支配した帝国はどこ？", answers: ["ローマ", "ローマ帝国", "ろーま"], info: "解説：アクティウムの海戦で敗北後、エジプトはローマ帝国の属州となりました。" },
+            { name: "聖徳太子", img: "shotoku.jpg", msg: "私が制定した、日本最初の憲法といえば？", answers: ["十七条憲法", "17条憲法", "じゅうななじょうけんぽう"], info: "解説：604年制定。役人の心得を説いたもので、仏教や儒教の教えも含まれています。" }
         ]
     };
 
     let currentEraData = [];
     let currentIdx = 0;
     let score = 0;
+    let timeLimitPerQuest = 30; 
     let timeLeft = 0;
     let timerInterval;
 
-    // 画面切り替え関数
     function showScreen(screenId) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(screenId).classList.add('active');
     }
 
-    // 制限時間の設定
-    function setTimer(seconds) {
-        timeLeft = seconds;
+    function setTimerConfig(sec) {
+        timeLimitPerQuest = sec;
         showScreen('era-screen');
     }
 
-    // ゲーム開始
     function startGame(era) {
         currentEraData = allQuizData[era];
         currentIdx = 0;
         score = 0;
         showScreen('game-screen');
         loadQuestion();
-        startTimer();
     }
 
-    // タイマー開始
-    function startTimer() {
-        updateTimerDisplay();
+    function loadQuestion() {
+        const data = currentEraData[currentIdx];
+        const input = document.getElementById('user-answer');
+        
+        // リセット
+        document.getElementById('char-img').src = data.img;
+        document.getElementById('dialogue').innerHTML = `<strong>${data.name}</strong><br>${data.msg}`;
+        document.getElementById('game-progress').innerText = `第 ${currentIdx + 1} 問 / 全 ${currentEraData.length} 問`;
+        
+        input.value = '';
+        input.disabled = false;
+        input.style.display = 'inline-block';
+        document.getElementById('submit-btn').style.display = 'block';
+        document.getElementById('next-btn').style.display = 'none';
+        
+        startQuestionTimer();
+        input.focus();
+    }
+
+    function startQuestionTimer() {
+        timeLeft = timeLimitPerQuest;
+        updateTimerBar();
+        
+        if (timerInterval) clearInterval(timerInterval);
+        
         timerInterval = setInterval(() => {
             timeLeft--;
-            updateTimerDisplay();
+            updateTimerBar();
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
-                finishGame("タイムアップ！");
+                processAnswer('timeout');
             }
         }, 1000);
     }
 
-    function updateTimerDisplay() {
-        document.getElementById('timer-bar').innerText = `残り時間: ${timeLeft}秒`;
+    function updateTimerBar() {
+        const percent = (timeLeft / timeLimitPerQuest) * 100;
+        document.getElementById('timer-bar-fill').style.width = percent + "%";
     }
 
-    // 問題読み込み
-    function loadQuestion() {
+    // 回答処理（手動回答 または タイムアップ）
+    function processAnswer(type) {
+        clearInterval(timerInterval);
         const data = currentEraData[currentIdx];
-        document.getElementById('char-img').src = data.img;
-        document.getElementById('dialogue').innerHTML = `<strong>${data.name}</strong><br>${data.msg}`;
-        document.getElementById('user-answer').value = '';
-        document.getElementById('user-answer').disabled = false;
-        document.getElementById('user-answer').focus();
-        document.getElementById('submit-btn').style.display = 'block';
-        document.getElementById('next-btn').style.display = 'none';
-        document.getElementById('game-progress').innerText = `${currentIdx + 1} / ${currentEraData.length}`;
-    }
+        const input = document.getElementById('user-answer');
+        const dialogue = document.getElementById('dialogue');
+        const userAnswer = input.value.trim();
+        
+        let resultTitle = "";
+        let titleColor = "";
 
-    // 答え合わせ
-    function checkAnswer() {
-        const input = document.getElementById('user-answer').value.trim();
-        const data = currentEraData[currentIdx];
-        const isCorrect = data.answers.includes(input);
-
-        if (isCorrect) {
-            score++;
-            document.getElementById('dialogue').innerHTML = `<strong>正解！</strong><br>${data.info}`;
-            document.getElementById('user-answer').disabled = true;
-            document.getElementById('submit-btn').style.display = 'none';
-            document.getElementById('next-btn').style.display = 'block';
+        if (type === 'timeout') {
+            resultTitle = "【時間切れ！】";
+            titleColor = "var(--wrong)";
         } else {
-            document.getElementById('game-screen').classList.add('shake');
-            setTimeout(() => document.getElementById('game-screen').classList.remove('shake'), 400);
-            document.getElementById('user-answer').value = '';
+            const isCorrect = data.answers.includes(userAnswer);
+            if (isCorrect) {
+                score++;
+                resultTitle = "【正解！】";
+                titleColor = "var(--correct)";
+            } else {
+                resultTitle = "【不正解…】";
+                titleColor = "var(--wrong)";
+                document.getElementById('game-screen').classList.add('shake');
+                setTimeout(() => document.getElementById('game-screen').classList.remove('shake'), 400);
+            }
         }
+
+        // 解説の表示
+        dialogue.innerHTML = `
+            <span style="color:${titleColor}; font-weight:bold;">${resultTitle}</span><br>
+            ${data.msg}
+            <div class="info-box">${data.info}</div>
+        `;
+
+        // UI切り替え
+        input.disabled = true;
+        document.getElementById('submit-btn').style.display = 'none';
+        document.getElementById('next-btn').style.display = 'block';
     }
 
-    // 次の問題へ
     function nextQuestion() {
         currentIdx++;
         if (currentIdx < currentEraData.length) {
             loadQuestion();
         } else {
-            clearInterval(timerInterval);
-            finishGame("全問終了！");
+            finishGame();
         }
     }
 
-    // ゲーム終了
-    function finishGame(reason) {
+    function finishGame() {
         showScreen('result-screen');
-        document.getElementById('final-score').innerText = `${reason}\n正解数: ${score} / ${currentEraData.length}`;
+        const rank = (score === currentEraData.length) ? "歴史マスター！" : "お疲れ様でした！";
+        document.getElementById('final-score').innerText = 
+            `${rank}\n正解数: ${score} / ${currentEraData.length}`;
     }
 
-    // Enterキー対応
     document.getElementById('user-answer').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') checkAnswer();
+        if (e.key === 'Enter' && document.getElementById('submit-btn').style.display !== 'none') {
+            processAnswer('manual');
+        }
     });
 
 </script>
