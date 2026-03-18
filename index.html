@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI肖像画 歴史記述クイズ</title>
+    <title>AI歴史肖像画クイズ Master</title>
     <style>
         :root {
             --gold: #d4af37;
@@ -24,7 +24,8 @@
             margin: 0;
         }
 
-        #game-card {
+        .screen {
+            display: none; /* 基本は非表示 */
             background: var(--paper);
             width: 90%;
             max-width: 500px;
@@ -33,232 +34,211 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.7);
             border: 3px double var(--gold);
             text-align: center;
-            transition: transform 0.3s ease;
+            animation: fadeIn 0.5s;
         }
 
-        #progress {
-            color: var(--gold);
-            margin-bottom: 10px;
+        .active { display: block; } /* activeクラスがついた画面だけ表示 */
+
+        h1 { color: #333; border-bottom: 2px solid var(--gold); padding-bottom: 10px; }
+        p { line-height: 1.6; }
+
+        /* ボタンデザイン共通 */
+        .menu-btn {
+            background: #333;
+            color: white;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1rem;
+            transition: 0.3s;
+        }
+        .menu-btn:hover { background: var(--gold); }
+
+        /* ゲーム画面専用 */
+        #timer-bar {
+            font-size: 1.2rem;
             font-weight: bold;
+            color: var(--wrong);
+            margin-bottom: 10px;
         }
 
         .portrait-frame {
-            width: 180px;
-            height: 180px;
-            margin: 0 auto 20px;
-            border: 6px solid #333;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 15px;
+            border: 5px solid #333;
             background: #ccc;
-            overflow: hidden;
             border-radius: 50%;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+            overflow: hidden;
         }
-
-        .portrait-frame img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.4s ease-out;
-        }
-
-        .speech-bubble {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            margin-bottom: 20px;
-            font-size: 1.1rem;
-            min-height: 60px;
-        }
-
-        .info-text {
-            display: block;
-            margin-top: 10px;
-            font-size: 0.85rem;
-            color: #666;
-            border-top: 1px dashed #ccc;
-            padding-top: 10px;
-        }
-
-        /* 入力エリアのスタイル */
-        .input-container {
-            margin-bottom: 20px;
-        }
+        .portrait-frame img { width: 100%; height: 100%; object-fit: cover; }
 
         #user-answer {
             width: 80%;
             padding: 12px;
             font-size: 1.1rem;
-            border: 2px solid #aaa;
-            border-radius: 4px;
-            outline: none;
-            font-family: inherit;
+            margin-bottom: 10px;
             text-align: center;
         }
 
-        #user-answer:focus {
-            border-color: var(--gold);
-        }
-
-        #submit-btn, #next-btn {
-            background: #333;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: bold;
-            margin-top: 10px;
-            width: 100%;
-        }
-
-        #next-btn {
-            display: none;
-            background: var(--gold);
-        }
-
-        /* アニメーション */
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            75% { transform: translateX(8px); }
-        }
-        .shake { animation: shake 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .shake { animation: shake 0.4s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
     </style>
 </head>
 <body>
 
-<div id="game-card">
-    <div id="progress"></div>
-    <div class="portrait-frame">
-        <img id="char-img" src="" alt="人物肖像">
-    </div>
-    <div class="speech-bubble" id="dialogue">読み込み中...</div>
-
-    <div class="input-container" id="input-area">
-        <input type="text" id="user-answer" placeholder="答えを入力してください" autocomplete="off">
-        <button id="submit-btn" onclick="checkAnswer()">回答する</button>
+    <div id="home-screen" class="screen active">
+        <h1>歴史肖像画クイズ</h1>
+        <p>肖像画の人物からの問いに答えよ。<br>すべての時代を制覇できるか？</p>
+        <button class="menu-btn" onclick="showScreen('time-screen')">挑戦を始める</button>
     </div>
 
-    <button id="next-btn" onclick="nextStage()"></button>
-</div>
+    <div id="time-screen" class="screen">
+        <h2>制限時間を選択</h2>
+        <button class="menu-btn" onclick="setTimer(30)">30秒（短期決戦）</button>
+        <button class="menu-btn" onclick="setTimer(60)">60秒（じっくり）</button>
+    </div>
+
+    <div id="era-screen" class="screen">
+        <h2>時代を選択</h2>
+        <button class="menu-btn" onclick="startGame('sengoku')">戦国・江戸時代</button>
+        <button class="menu-btn" onclick="startGame('ancient')">古代・中世（世界/日本）</button>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <div id="timer-bar">残り時間: --</div>
+        <div id="game-progress" style="font-size: 0.8rem; color: #666;"></div>
+        <div class="portrait-frame">
+            <img id="char-img" src="" alt="">
+        </div>
+        <div id="dialogue" style="min-height: 80px; margin-bottom: 15px;"></div>
+        <input type="text" id="user-answer" placeholder="答えを入力" autocomplete="off">
+        <button id="submit-btn" class="menu-btn" onclick="checkAnswer()">回答する</button>
+        <button id="next-btn" class="menu-btn" style="display:none; background:var(--gold);" onclick="nextQuestion()">次の問題へ</button>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h1>結果発表</h1>
+        <p id="final-score" style="font-size: 1.5rem; font-weight: bold;"></p>
+        <button class="menu-btn" onclick="location.reload()">ホームに戻る</button>
+    </div>
 
 <script>
-    const quizData = [
-        {
-            name: "織田信長",
-            img: "nobunaga.jpg",
-            msg: "我は織田信長。私が「楽市楽座」を最初に行った城下町はどこか答えてみよ。",
-            // 揺れを考慮して配列で持たせる
-            answers: ["岐阜城", "岐阜", "ぎふ", "ぎふじょう"], 
-            correct: "その通り！天下布武の始まりはこの地からよ。",
-            wrong: "笑わせるな。そんな基礎も知らぬとは。もう一度考え直せ。",
-            info: "解説：1567年、信長は斎藤氏を滅ぼすと「井口」を「岐阜」と改め、楽市楽座令を発布して商工業を活性化させました。"
-        },
-        {
-            name: "クレオパトラ",
-            img: "cleopatra.jpg",
-            msg: "エジプトの太陽、クレオパトラよ。私の死後、エジプトを支配した帝国はどこかしら？",
-            answers: ["ローマ帝国", "ローマ", "ろーま", "ろーまていこく"],
-            correct: "正解よ。歴史の流れをよく理解しているわね。",
-            wrong: "残念。私の最後を汚さないで頂戴。やり直しよ。",
-            info: "解説：プトレマイオス朝最後の女王。彼女の死後、エジプトは古代ローマの初代皇帝オクタウィアヌスによって属州とされました。"
-        }
-    ];
+    // --- クイズデータ ---
+    const allQuizData = {
+        sengoku: [
+            { name: "織田信長", img: "nobunaga.jpg", msg: "「楽市楽座」を最初に行った城下町は？", answers: ["岐阜", "岐阜城", "ぎふ"], info: "1567年に発布されました。" },
+            { name: "徳川家康", img: "ieyasu.jpg", msg: "征夷大将軍に任命され、江戸幕府を開いたのは西暦何年？", answers: ["1603", "1603年"], info: "関ヶ原の戦いの3年後です。" }
+        ],
+        ancient: [
+            { name: "クレオパトラ", img: "cleopatra.jpg", msg: "プトレマイオス朝最後の女王である私の国はどこ？", answers: ["エジプト", "古代エジプト"], info: "ローマの属州となりました。" },
+            { name: "聖徳太子", img: "shotoku.jpg", msg: "私が制定した、日本最初の憲法といえば？", answers: ["十七条憲法", "17条憲法"], info: "推古天皇の摂政として活躍しました。" }
+        ]
+    };
 
+    let currentEraData = [];
     let currentIdx = 0;
+    let score = 0;
+    let timeLeft = 0;
+    let timerInterval;
 
-    function loadStage() {
-        const data = quizData[currentIdx];
-        const card = document.getElementById('game-card');
-        const img = document.getElementById('char-img');
-        const dialogue = document.getElementById('dialogue');
-        const input = document.getElementById('user-answer');
-        const submitBtn = document.getElementById('submit-btn');
-        const nextBtn = document.getElementById('next-btn');
-
-        // リセット
-        card.classList.remove('shake');
-        img.style.transform = 'scale(1.0)';
-        dialogue.innerHTML = data.msg;
-        input.value = '';
-        input.disabled = false;
-        input.style.display = 'inline-block';
-        submitBtn.style.display = 'block';
-        nextBtn.style.display = 'none';
-        
-        document.getElementById('progress').innerText = `第 ${currentIdx + 1} 問 / 全 ${quizData.length} 問`;
-        img.src = data.img;
-        img.alt = data.name;
-
-        // 入力欄にフォーカス
-        input.focus();
+    // 画面切り替え関数
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
     }
 
+    // 制限時間の設定
+    function setTimer(seconds) {
+        timeLeft = seconds;
+        showScreen('era-screen');
+    }
+
+    // ゲーム開始
+    function startGame(era) {
+        currentEraData = allQuizData[era];
+        currentIdx = 0;
+        score = 0;
+        showScreen('game-screen');
+        loadQuestion();
+        startTimer();
+    }
+
+    // タイマー開始
+    function startTimer() {
+        updateTimerDisplay();
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay();
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                finishGame("タイムアップ！");
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        document.getElementById('timer-bar').innerText = `残り時間: ${timeLeft}秒`;
+    }
+
+    // 問題読み込み
+    function loadQuestion() {
+        const data = currentEraData[currentIdx];
+        document.getElementById('char-img').src = data.img;
+        document.getElementById('dialogue').innerHTML = `<strong>${data.name}</strong><br>${data.msg}`;
+        document.getElementById('user-answer').value = '';
+        document.getElementById('user-answer').disabled = false;
+        document.getElementById('user-answer').focus();
+        document.getElementById('submit-btn').style.display = 'block';
+        document.getElementById('next-btn').style.display = 'none';
+        document.getElementById('game-progress').innerText = `${currentIdx + 1} / ${currentEraData.length}`;
+    }
+
+    // 答え合わせ
     function checkAnswer() {
-        const data = quizData[currentIdx];
-        const input = document.getElementById('user-answer');
-        const userAnswer = input.value.trim();
-        const dialogue = document.getElementById('dialogue');
-        const img = document.getElementById('char-img');
-        const card = document.getElementById('game-card');
-
-        if (!userAnswer) return; // 空送信防止
-
-        // 正解配列のいずれかと一致するかチェック
-        const isCorrect = data.answers.includes(userAnswer);
+        const input = document.getElementById('user-answer').value.trim();
+        const data = currentEraData[currentIdx];
+        const isCorrect = data.answers.includes(input);
 
         if (isCorrect) {
-            // 正解演出
-            input.disabled = true;
+            score++;
+            document.getElementById('dialogue').innerHTML = `<strong>正解！</strong><br>${data.info}`;
+            document.getElementById('user-answer').disabled = true;
             document.getElementById('submit-btn').style.display = 'none';
-            img.style.transform = 'scale(1.1)';
-            dialogue.innerHTML = `<strong>【正解！】</strong><br>${data.correct}<span class="info-text">${data.info}</span>`;
-            
-            const nextBtn = document.getElementById('next-btn');
-            nextBtn.innerText = (currentIdx < quizData.length - 1) ? "次の人物へ →" : "結果を見る";
-            nextBtn.style.display = 'block';
-            nextBtn.focus();
+            document.getElementById('next-btn').style.display = 'block';
         } else {
-            // 不正解演出
-            card.classList.remove('shake');
-            void card.offsetWidth; // リフロー発生させてアニメーションを再トリガー
-            card.classList.add('shake');
-            dialogue.innerHTML = `<strong>【不正解…】</strong><br>${data.wrong}`;
-            input.value = '';
-            input.focus();
+            document.getElementById('game-screen').classList.add('shake');
+            setTimeout(() => document.getElementById('game-screen').classList.remove('shake'), 400);
+            document.getElementById('user-answer').value = '';
         }
     }
 
-    function nextStage() {
+    // 次の問題へ
+    function nextQuestion() {
         currentIdx++;
-        if (currentIdx < quizData.length) {
-            loadStage();
+        if (currentIdx < currentEraData.length) {
+            loadQuestion();
         } else {
-            showResult();
+            clearInterval(timerInterval);
+            finishGame("全問終了！");
         }
     }
 
-    function showResult() {
-        document.querySelector('.portrait-frame').style.display = 'none';
-        document.getElementById('input-area').style.display = 'none';
-        document.getElementById('progress').style.display = 'none';
-        document.getElementById('dialogue').innerHTML = `
-            <div style="font-size:1.5rem; color:var(--gold); font-weight:bold; margin-bottom:10px;">完全制覇！</div>
-            全ての歴史の問いに答えました。<br>あなたの筆さばき、実に見事であった！
-        `;
-        const nextBtn = document.getElementById('next-btn');
-        nextBtn.innerText = "もう一度挑戦する";
-        nextBtn.onclick = () => location.reload();
+    // ゲーム終了
+    function finishGame(reason) {
+        showScreen('result-screen');
+        document.getElementById('final-score').innerText = `${reason}\n正解数: ${score} / ${currentEraData.length}`;
     }
 
-    // Enterキーで回答送信できるように設定
+    // Enterキー対応
     document.getElementById('user-answer').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') checkAnswer();
     });
 
-    window.onload = loadStage;
 </script>
-
 </body>
 </html>
