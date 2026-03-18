@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI歴史肖像画クイズ フルスクリーン版</title>
+    <title>AI歴史肖像画クイズ フルワイド版</title>
     <style>
         :root {
             --gold: #d4af37;
@@ -65,7 +65,7 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
 
-        /* --- ゲーム画面（フルスクリーン・ダイナミック） --- */
+        /* --- ゲーム画面（フルワイド・ダイナミック） --- */
         #game-screen {
             background-color: var(--paper); /* ゲーム中は和紙背景 */
             justify-content: flex-start; /* 上から順に配置 */
@@ -73,7 +73,7 @@
 
         /* 画面上部：タイマーと進捗 */
         #header-zone {
-            padding: 10px 15px;
+            padding: 15px; /* 左右の余白を少し広く */
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -83,48 +83,49 @@
         #game-progress { font-weight: bold; }
         #timer-text { font-weight: bold; color: var(--wrong); }
 
-        /* 画面中央上部：巨大肖像画 */
+        /* 画面中央上部：真のフルワイド巨大肖像画 */
         #portrait-zone-outer {
-            width: 100%;
+            width: 100%; /* 横幅いっぱい */
             position: relative;
             background: #333; /* 画像がない場合の背景 */
             border-bottom: 5px solid var(--dark);
+            overflow: hidden; /* 正解・不正解時の演出ハミ出し防止 */
         }
         .portrait-frame-inner {
-            width: 100%;
-            height: 40vh; /* 画面の高さの40%を肖像画に */
+            width: 100%; /* 横幅いっぱい */
+            height: 45vh; /* 画面の高さの45%を肖像画に */
             overflow: hidden;
             position: relative;
             transition: all 0.3s;
         }
         .portrait-frame-inner img { 
-            width: 100%; 
+            width: 100%; /* 横幅いっぱい */
             height: 100%; 
-            object-fit: cover; /* 画面いっぱいに表示 */
+            object-fit: cover; /* 画像を画面いっぱいにカバー */
             transition: opacity 0.2s; 
         }
 
         /* 正解・不正解時の演出（画面全体） */
-        .frame-correct { border-color: var(--correct) !important; box-shadow: 0 0 50px var(--correct); }
-        .frame-wrong { border-color: var(--wrong) !important; box-shadow: 0 0 30px var(--wrong); }
+        .frame-correct { border-color: var(--correct) !important; box-shadow: 0 0 60px var(--correct); }
+        .frame-wrong { border-color: var(--wrong) !important; box-shadow: 0 0 40px var(--wrong); }
 
         /* 画面中央下部：セリフ */
         #dialogue-zone {
             flex-grow: 1; /* 残りのスペースを埋める */
-            padding: 20px;
+            padding: 25px; /* セリフエリアの余白を少し広く */
             overflow-y: auto; /* セリフが長い場合スクロール */
             box-sizing: border-box;
         }
         .speech-bubble {
-            font-size: 1.1rem;
-            line-height: 1.6;
+            font-size: 1.15rem; /* セリフの文字を少し大きく */
+            line-height: 1.7;
             text-align: left;
         }
         .info-box { margin-top: 15px; padding-top: 15px; border-top: 2px dotted var(--era-color); color: #555; }
 
         /* 画面下部：入力・操作エリア */
         #input-zone {
-            padding: 15px;
+            padding: 15px 25px; /* 左右の余白を統一 */
             background: rgba(255,255,255,0.9);
             border-top: 1px solid #ccc;
             display: flex;
@@ -133,8 +134,9 @@
         }
         #user-answer {
             width: 90%;
+            max-width: 400px; /* 入力欄が広がりすぎないように最大幅を設定 */
             padding: 15px;
-            font-size: 1.2rem;
+            font-size: 1.25rem; /* 入力文字を少し大きく */
             margin-bottom: 10px;
             border-radius: 8px;
             border: 2px solid #ddd;
@@ -144,6 +146,7 @@
             background: var(--dark);
             color: #fff;
             width: 100%;
+            max-width: 400px; /* ボタンが広がりすぎないように最大幅を設定 */
             margin: 0;
             padding: 15px;
         }
@@ -158,14 +161,15 @@
             width: 100%;
             margin: 0;
             border-radius: 0;
-            padding: 20px;
+            padding: 25px; /* 次へボタンの余白を少し広く */
+            font-size: 1.3rem; /* 文字を少し大きく */
         }
 
         /* アニメーション */
         @keyframes angryShake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-15px); }
-            75% { transform: translateX(15px); }
+            25% { transform: translateX(-20px); }
+            75% { transform: translateX(20px); }
         }
         .angry-shake { animation: angryShake 0.1s ease-in-out infinite; animation-iteration-count: 3; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -375,14 +379,14 @@
         document.getElementById('input-zone').style.display = 'none';
         
         // 解説が出た後は巨大画像エリアを少し縮小してセリフを見やすくする演出
-        document.getElementById('portrait-zone-inner').style.height = '25vh';
+        document.getElementById('portrait-zone-inner').style.height = '30vh';
         
         document.getElementById('next-btn').style.display = 'block';
     }
 
     function nextQuestion() {
         // 次へ進むときに画像エリアのサイズを元に戻す
-        document.getElementById('portrait-zone-inner').style.height = '40vh';
+        document.getElementById('portrait-zone-inner').style.height = '45vh';
         
         currentIdx++;
         if (currentIdx < currentEraData.questions.length) {
