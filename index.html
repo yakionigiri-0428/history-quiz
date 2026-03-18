@@ -3,221 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI歴史肖像画クイズ フルワイド版</title>
+    <title>AI歴史肖像画クイズ - 全画面没入版</title>
     <style>
         :root {
             --gold: #d4af37;
-            --dark: #1e1e1e;
-            --paper: #fdf5e6;
-            --correct: #4caf50;
-            --wrong: #f44336;
+            --dark: rgba(30, 30, 30, 0.85);
+            --correct: rgba(76, 175, 80, 0.9);
+            --wrong: rgba(244, 67, 54, 0.9);
             --era-color: var(--gold);
         }
 
-        body {
-            background-color: var(--paper); /* 背景（和紙）を全体に */
-            color: #333;
-            font-family: 'Hiragino Mincho ProN', 'MS Mincho', serif;
+        body, html {
             margin: 0;
             padding: 0;
-            overflow: hidden; /* スマホのスクロールバウンス防止 */
-            height: 100vh;
-            display: flex;
-            justify-content: center;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            font-family: 'Hiragino Mincho ProN', 'MS Mincho', serif;
+            overflow: hidden;
         }
 
-        /* 画面全体のレイアウト */
-        .screen {
-            display: none;
+        /* 背景画像：画面いっぱいに表示 */
+        #bg-image {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            animation: fadeIn 0.4s ease-out;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+            transition: opacity 0.5s, transform 0.3s;
+        }
+
+        .screen {
             position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            box-sizing: border-box;
         }
         .active { display: flex; }
 
-        /* --- ホーム画面・時代選択画面（フルスクリーン） --- */
-        #home-screen, #era-screen, #result-screen {
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-            background-color: var(--dark); /* ホーム系はダーク背景 */
-            color: #fff;
-        }
-        
-        h1, h2 { border-bottom: 2px solid var(--era-color); padding-bottom: 10px; text-align: center; }
-        
-        .menu-btn {
-            background: #fff;
-            color: var(--dark);
-            padding: 20px;
-            margin: 15px 0;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            width: 80%;
-            max-width: 300px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        /* --- ゲーム画面（フルワイド・ダイナミック） --- */
-        #game-screen {
-            background-color: var(--paper); /* ゲーム中は和紙背景 */
-            justify-content: flex-start; /* 上から順に配置 */
-        }
-
-        /* 画面上部：タイマーと進捗 */
+        /* 上部ステータス */
         #header-zone {
-            padding: 15px; /* 左右の余白を少し広く */
+            padding: 20px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            background: rgba(0,0,0,0.05);
-            border-bottom: 1px solid #ccc;
-        }
-        #game-progress { font-weight: bold; }
-        #timer-text { font-weight: bold; color: var(--wrong); }
-
-        /* 画面中央上部：真のフルワイド巨大肖像画 */
-        #portrait-zone-outer {
-            width: 100%; /* 横幅いっぱい */
-            position: relative;
-            background: #333; /* 画像がない場合の背景 */
-            border-bottom: 5px solid var(--dark);
-            overflow: hidden; /* 正解・不正解時の演出ハミ出し防止 */
-        }
-        .portrait-frame-inner {
-            width: 100%; /* 横幅いっぱい */
-            height: 45vh; /* 画面の高さの45%を肖像画に */
-            overflow: hidden;
-            position: relative;
-            transition: all 0.3s;
-        }
-        .portrait-frame-inner img { 
-            width: 100%; /* 横幅いっぱい */
-            height: 100%; 
-            object-fit: cover; /* 画像を画面いっぱいにカバー */
-            transition: opacity 0.2s; 
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            font-weight: bold;
+            font-size: 1.2rem;
+            z-index: 20;
         }
 
-        /* 正解・不正解時の演出（画面全体） */
-        .frame-correct { border-color: var(--correct) !important; box-shadow: 0 0 60px var(--correct); }
-        .frame-wrong { border-color: var(--wrong) !important; box-shadow: 0 0 40px var(--wrong); }
-
-        /* 画面中央下部：セリフ */
+        /* 問題文エリア：画像の上に浮かせる */
         #dialogue-zone {
-            flex-grow: 1; /* 残りのスペースを埋める */
-            padding: 25px; /* セリフエリアの余白を少し広く */
-            overflow-y: auto; /* セリフが長い場合スクロール */
-            box-sizing: border-box;
+            margin: auto 20px 20px 20px;
+            padding: 20px;
+            background: var(--dark);
+            backdrop-filter: blur(5px);
+            border-left: 5px solid var(--era-color);
+            border-radius: 8px;
+            color: #fff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        .speech-bubble {
-            font-size: 1.15rem; /* セリフの文字を少し大きく */
-            line-height: 1.7;
-            text-align: left;
-        }
-        .info-box { margin-top: 15px; padding-top: 15px; border-top: 2px dotted var(--era-color); color: #555; }
 
-        /* 画面下部：入力・操作エリア */
+        /* 入力エリア */
         #input-zone {
-            padding: 15px 25px; /* 左右の余白を統一 */
-            background: rgba(255,255,255,0.9);
-            border-top: 1px solid #ccc;
+            padding: 0 20px 40px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
+
         #user-answer {
-            width: 90%;
-            max-width: 400px; /* 入力欄が広がりすぎないように最大幅を設定 */
-            padding: 15px;
-            font-size: 1.25rem; /* 入力文字を少し大きく */
-            margin-bottom: 10px;
-            border-radius: 8px;
-            border: 2px solid #ddd;
+            width: 100%;
+            max-width: 500px;
+            padding: 18px;
+            font-size: 1.4rem;
+            border: none;
+            border-radius: 30px;
+            text-align: center;
+            outline: none;
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        /* ボタン */
+        .menu-btn {
+            background: var(--era-color);
+            color: #fff;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        /* 特殊演出 */
+        .wrong-flash {
+            animation: screenShake 0.1s infinite;
+            background-color: rgba(255, 0, 0, 0.3);
+        }
+
+        @keyframes screenShake {
+            0% { transform: translate(0,0); }
+            25% { transform: translate(-10px, 10px); }
+            50% { transform: translate(10px, -10px); }
+            75% { transform: translate(-10px, -10px); }
+            100% { transform: translate(10px, 10px); }
+        }
+
+        /* 解説表示時 */
+        .info-box {
+            margin-top: 10px;
+            font-size: 0.95rem;
+            color: #ddd;
+            border-top: 1px solid rgba(255,255,255,0.3);
+            padding-top: 10px;
+        }
+
+        /* メニュー画面用 */
+        #home-screen, #era-screen {
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            color: white;
             text-align: center;
         }
-        #submit-btn {
-            background: var(--dark);
-            color: #fff;
-            width: 100%;
-            max-width: 400px; /* ボタンが広がりすぎないように最大幅を設定 */
-            margin: 0;
-            padding: 15px;
-        }
-
-        /* 次へボタン（画面下部に固定） */
-        #next-btn {
-            background: var(--era-color);
-            display: none;
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            margin: 0;
-            border-radius: 0;
-            padding: 25px; /* 次へボタンの余白を少し広く */
-            font-size: 1.3rem; /* 文字を少し大きく */
-        }
-
-        /* アニメーション */
-        @keyframes angryShake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-20px); }
-            75% { transform: translateX(20px); }
-        }
-        .angry-shake { animation: angryShake 0.1s ease-in-out infinite; animation-iteration-count: 3; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
+    <img id="bg-image" src="" alt="">
+
     <div id="home-screen" class="screen active">
-        <h1>歴史肖像画クイズ</h1>
-        <p>画面いっぱい、彼らが迫る。</p>
+        <h1 style="font-size: 2.5rem; color: var(--gold);">歴史の門</h1>
+        <p>肖像画の主と対峙せよ。</p>
         <button class="menu-btn" onclick="showScreen('era-screen')">挑戦を始める</button>
     </div>
 
     <div id="era-screen" class="screen">
         <h2>時代を選択</h2>
-        <button class="menu-btn" onclick="startGame('sengoku')">戦国・江戸時代</button>
+        <button class="menu-btn" onclick="startGame('sengoku')">戦国・江戸</button>
         <button class="menu-btn" onclick="startGame('ancient')">古代・中世</button>
     </div>
 
     <div id="game-screen" class="screen">
-        
         <div id="header-zone">
             <div id="game-progress"></div>
             <div id="timer-text"></div>
         </div>
         
-        <div id="portrait-zone-outer" class="portrait-frame-outer">
-            <div id="portrait-zone-inner" class="portrait-frame-inner">
-                <img id="char-img" src="" alt="人物肖像">
-            </div>
-        </div>
-
         <div id="dialogue-zone">
-            <div class="speech-bubble" id="dialogue"></div>
+            <div id="dialogue" style="font-size: 1.3rem;"></div>
+            <div id="info-area" class="info-box" style="display:none;"></div>
         </div>
 
         <div id="input-zone">
             <input type="text" id="user-answer" placeholder="答えを入力" autocomplete="off">
             <button id="submit-btn" class="menu-btn" onclick="checkAttempt()">回答する</button>
+            <button id="next-btn" class="menu-btn" style="display:none;" onclick="nextQuestion()">次へ進む</button>
         </div>
-        
-        <button id="next-btn" class="menu-btn" onclick="nextQuestion()">次の問題へ進む →</button>
-    </div>
-
-    <div id="result-screen" class="screen">
-        <h1>結果発表</h1>
-        <p id="final-score" style="font-size: 1.5rem; font-weight: bold;"></p>
-        <button class="menu-btn" onclick="location.reload()">ホームに戻る</button>
     </div>
 
 <script>
@@ -225,7 +178,7 @@
         sengoku: {
             color: "#e74c3c",
             questions: [
-                { name: "織田信長", imgs: { default: "nobunaga.jpg", win: "nobunaga_win.jpg", lose: "nobunaga_lose.jpg" }, msg: "「楽市楽座」を最初に行った城下町はどこか？", answers: ["岐阜", "岐阜城", "ぎふ"], info: "1567年、信長は「岐阜」から独占権を撤廃する「楽市楽座」を開始しました。" },
+                { name: "織田信長", imgs: { default: "nobunaga.jpg", win: "nobunaga_win.jpg", lose: "nobunaga_lose.jpg" }, msg: "「楽市楽座」を最初に行った城下町はどこか？", answers: ["岐阜", "岐阜城", "ぎふ"], info: "1567年、信長は「岐阜」と改称し、ここから「楽市楽座」を広めました。" },
                 { name: "徳川家康", imgs: { default: "ieyasu.jpg", win: "ieyasu_win.jpg", lose: "ieyasu_lose.jpg" }, msg: "江戸幕府が開かれたのは西暦何年か？", answers: ["1603", "1603年"], info: "1603年、家康は征夷大将軍に任命され、江戸に幕府を開きました。" }
             ]
         },
@@ -233,7 +186,7 @@
             color: "#3498db",
             questions: [
                 { name: "クレオパトラ", imgs: { default: "cleopatra.jpg", win: "cleopatra_win.jpg", lose: "cleopatra_lose.jpg" }, msg: "私の死後、エジプトを支配した帝国はどこ？", answers: ["ローマ", "ローマ帝国", "ろーま"], info: "彼女の死後、エジプトはローマ帝国の属州となりました。" },
-                { name: "聖徳太子", imgs: { default: "shotoku.jpg", win: "shotoku_win.jpg", lose: "shotoku_lose.jpg" }, msg: "日本最初の憲法といえば何？", answers: ["十七条憲法", "17条憲法", "じゅうななじょうけんぽう"], info: "604年制定。役人の心得を説いたもので、和の精神を強調しています。" }
+                { name: "聖徳太子", imgs: { default: "shotoku.jpg", win: "shotoku.jpg", lose: "shotoku.jpg" }, msg: "私が制定した、日本最初の憲法といえば何？", answers: ["十七条憲法", "17条憲法", "じゅうななじょうけんぽう"], info: "604年制定。和の精神を説いたものです。" }
             ]
         }
     };
@@ -263,20 +216,19 @@
     function loadQuestion() {
         isLocked = false;
         const data = currentEraData.questions[currentIdx];
-        const portraitOuter = document.getElementById('portrait-zone-outer');
-        const portraitInner = document.getElementById('portrait-zone-inner');
         
         changePortrait('default');
-        portraitOuter.classList.remove('frame-correct', 'frame-wrong', 'angry-shake');
-        portraitInner.classList.remove('angry-shake');
+        document.body.classList.remove('wrong-flash');
         
-        document.getElementById('dialogue').innerHTML = `<strong>${data.name}：</strong> ${data.msg}`;
-        document.getElementById('game-progress').innerText = `${currentIdx + 1} / ${currentEraData.questions.length}`;
+        document.getElementById('dialogue').innerHTML = `<strong>${data.name}：</strong><br>${data.msg}`;
+        document.getElementById('info-area').style.display = 'none';
+        document.getElementById('game-progress').innerText = `第 ${currentIdx + 1} 問`;
         
         const input = document.getElementById('user-answer');
         input.value = '';
         input.disabled = false;
-        document.getElementById('input-zone').style.display = 'flex';
+        input.style.display = 'block';
+        document.getElementById('submit-btn').style.display = 'block';
         document.getElementById('next-btn').style.display = 'none';
         
         timeLeft = TIME_LIMIT;
@@ -287,12 +239,12 @@
 
     function changePortrait(type) {
         const data = currentEraData.questions[currentIdx];
-        const imgEl = document.getElementById('char-img');
-        imgEl.style.opacity = 0;
+        const imgEl = document.getElementById('bg-image');
+        imgEl.style.opacity = 0.5; // 切り替え時の演出
         setTimeout(() => {
             imgEl.src = data.imgs[type];
             imgEl.style.opacity = 1;
-        }, 150);
+        }, 200);
     }
 
     function startTimerLoop() {
@@ -300,15 +252,14 @@
         timerInterval = setInterval(() => {
             timeLeft -= 1;
             updateTimerText();
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                finishQuestion('timeout');
-            }
+            if (timeLeft <= 0) finishQuestion('timeout');
         }, 1000);
     }
 
     function updateTimerText() {
-        document.getElementById('timer-text').innerText = `残り ${Math.max(0, timeLeft)}秒`;
+        const timerEl = document.getElementById('timer-text');
+        timerEl.innerText = `残り ${Math.max(0, timeLeft)}秒`;
+        timerEl.style.color = timeLeft <= 5 ? "#ff4444" : "#fff";
     }
 
     function checkAttempt() {
@@ -316,11 +267,8 @@
 
         const data = currentEraData.questions[currentIdx];
         const userAnswer = document.getElementById('user-answer').value.trim();
-        const portraitOuter = document.getElementById('portrait-zone-outer');
-        const portraitInner = document.getElementById('portrait-zone-inner');
         
         if (data.answers.includes(userAnswer)) {
-            clearInterval(timerInterval);
             score++;
             finishQuestion('correct');
         } else {
@@ -328,20 +276,18 @@
             timeLeft -= 3;
             updateTimerText();
             
+            // 画面揺れとフラッシュ
+            document.body.classList.add('wrong-flash');
             changePortrait('lose');
-            portraitOuter.classList.add('frame-wrong');
-            portraitInner.classList.add('angry-shake');
             
             if (timeLeft <= 0) {
-                clearInterval(timerInterval);
                 finishQuestion('timeout');
                 return;
             }
 
             setTimeout(() => {
+                document.body.classList.remove('wrong-flash');
                 changePortrait('default');
-                portraitOuter.classList.remove('frame-wrong');
-                portraitInner.classList.remove('angry-shake');
                 document.getElementById('user-answer').value = '';
                 document.getElementById('user-answer').focus();
                 isLocked = false;
@@ -350,61 +296,52 @@
     }
 
     function finishQuestion(result) {
+        clearInterval(timerInterval);
         isLocked = true;
         const data = currentEraData.questions[currentIdx];
-        const portraitOuter = document.getElementById('portrait-zone-outer');
-        const portraitInner = document.getElementById('portrait-zone-inner');
         const dialogue = document.getElementById('dialogue');
+        const infoArea = document.getElementById('info-area');
         
-        let statusText = "";
-        
+        document.body.classList.remove('wrong-flash');
+
         if (result === 'correct') {
-            statusText = "<span style='color:var(--correct)'>【 正解 】</span>";
+            dialogue.innerHTML = `<span style="color:#4caf50; font-weight:bold;">【 正解 】</span><br><strong>${data.name}：</strong> 見事だ！`;
             changePortrait('win');
-            portraitOuter.classList.add('frame-correct');
         } else {
-            statusText = "<span style='color:var(--wrong)'>【 時間切れ 】</span>";
+            dialogue.innerHTML = `<span style="color:#f44336; font-weight:bold;">【 失敗 】</span><br><strong>${data.name}：</strong> 時は満ちた...`;
             changePortrait('lose');
-            portraitOuter.classList.add('frame-wrong');
             timeLeft = 0;
             updateTimerText();
         }
 
-        dialogue.innerHTML = `
-            ${statusText}<br><strong>${data.name}：</strong> ${data.msg}
-            <div class="info-box"><strong>解説：</strong> ${data.info}</div>
-        `;
+        infoArea.innerHTML = `<strong>解説：</strong> ${data.info}`;
+        infoArea.style.display = 'block';
 
-        document.getElementById('user-answer').disabled = true;
-        document.getElementById('input-zone').style.display = 'none';
-        
-        // 解説が出た後は巨大画像エリアを少し縮小してセリフを見やすくする演出
-        document.getElementById('portrait-zone-inner').style.height = '30vh';
-        
+        document.getElementById('user-answer').style.display = 'none';
+        document.getElementById('submit-btn').style.display = 'none';
         document.getElementById('next-btn').style.display = 'block';
     }
 
     function nextQuestion() {
-        // 次へ進むときに画像エリアのサイズを元に戻す
-        document.getElementById('portrait-zone-inner').style.height = '45vh';
-        
         currentIdx++;
         if (currentIdx < currentEraData.questions.length) {
             loadQuestion();
         } else {
-            finishGame();
+            showResult();
         }
     }
 
-    function finishGame() {
-        showScreen('result-screen');
-        document.getElementById('final-score').innerText = `正解数: ${score} / ${currentEraData.questions.length}`;
+    function showResult() {
+        document.getElementById('bg-image').style.opacity = 0.3;
+        document.getElementById('dialogue').innerHTML = `<h2>最終結果</h2>正解数: ${score} / ${currentEraData.questions.length}`;
+        document.getElementById('info-area').style.display = 'none';
+        document.getElementById('next-btn').innerText = "ホームに戻る";
+        document.getElementById('next-btn').onclick = () => location.reload();
     }
 
     document.getElementById('user-answer').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') checkAttempt();
     });
-
 </script>
 </body>
 </html>
