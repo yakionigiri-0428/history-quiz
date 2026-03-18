@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI歴史クイズ タイムペナルティ版</title>
+    <title>AI歴史クイズ 大画版</title>
     <style>
         :root {
             --gold: #d4af37;
@@ -29,7 +29,7 @@
             display: none;
             background: var(--paper);
             width: 90%;
-            max-width: 500px;
+            max-width: 500px; /* カード全体の最大幅は維持 */
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.8);
@@ -40,7 +40,7 @@
 
         .active { display: block; }
 
-        /* タイマーバーの演出 */
+        /* タイマーバー */
         #timer-container {
             width: 100%;
             height: 14px;
@@ -49,31 +49,32 @@
             margin-bottom: 20px;
             overflow: hidden;
             border: 1px solid #ccc;
-            position: relative;
         }
         #timer-bar-fill {
             height: 100%;
             width: 100%;
             background: var(--era-color);
-            transition: width 0.3s ease-out, background-color 0.3s; /* 減少時は素早く */
+            transition: width 0.3s ease-out, background-color 0.3s;
         }
-        /* ペナルティ時のフラッシュ */
         .timer-penalty { background-color: var(--wrong) !important; }
 
+        /* --- ★肖像画フレームの大画面化 --- */
         .portrait-frame {
-            width: 160px;
-            height: 160px;
-            margin: 0 auto 20px;
-            border: 6px solid #333;
+            width: 220px;  /* 160px -> 220px */
+            height: 220px; /* 160px -> 220px */
+            margin: 0 auto 25px; /* 下のマージンを少し広く */
+            border: 7px solid #333; /* 枠も少し太く */
             background: #fff;
             border-radius: 50%;
             overflow: hidden;
             transition: all 0.3s;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); /* 影を強調 */
         }
         .portrait-frame img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.2s; }
 
-        .frame-correct { border-color: var(--correct); box-shadow: 0 0 25px var(--correct); transform: scale(1.1); }
-        .frame-wrong { border-color: var(--wrong); box-shadow: 0 0 15px var(--wrong); }
+        /* サイズ拡大に合わせて拡大率を調整 */
+        .frame-correct { border-color: var(--correct); box-shadow: 0 0 30px var(--correct); transform: scale(1.05); }
+        .frame-wrong { border-color: var(--wrong); box-shadow: 0 0 20px var(--wrong); }
 
         .speech-bubble {
             background: white;
@@ -81,7 +82,7 @@
             border-radius: 15px;
             border: 1px solid #eee;
             margin-bottom: 20px;
-            min-height: 100px;
+            min-height: 90px;
             text-align: left;
         }
 
@@ -263,17 +264,14 @@
             score++;
             finishQuestion('correct');
         } else {
-            // --- ペナルティ処理 ---
             isLocked = true;
-            timeLeft -= 3; // 3秒マイナス
+            timeLeft -= 3;
             updateTimerBar();
             
-            // 視覚的な警告
             timerFill.classList.add('timer-penalty');
             changePortrait('lose');
             portraitZone.classList.add('frame-wrong', 'angry-shake');
             
-            // 時間切れチェック
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
                 finishQuestion('timeout');
