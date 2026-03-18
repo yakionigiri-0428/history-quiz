@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI歴史クイズ 連続挑戦版</title>
+    <title>AI歴史クイズ タイムペナルティ版</title>
     <style>
         :root {
             --gold: #d4af37;
@@ -40,39 +40,25 @@
 
         .active { display: block; }
 
-        h1, h2 { color: #222; border-bottom: 2px solid var(--era-color); padding-bottom: 10px; margin-top: 0; }
-
-        .menu-btn {
-            background: #333;
-            color: white;
-            padding: 15px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            font-size: 1.1rem;
-            font-weight: bold;
-            transition: 0.2s;
-        }
-        .menu-btn:hover:not(:disabled) { background: var(--era-color); transform: translateY(-2px); }
-        .menu-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
+        /* タイマーバーの演出 */
         #timer-container {
             width: 100%;
-            height: 12px;
+            height: 14px;
             background: #ddd;
-            border-radius: 6px;
+            border-radius: 7px;
             margin-bottom: 20px;
             overflow: hidden;
             border: 1px solid #ccc;
+            position: relative;
         }
         #timer-bar-fill {
             height: 100%;
             width: 100%;
             background: var(--era-color);
-            transition: width 1s linear;
+            transition: width 0.3s ease-out, background-color 0.3s; /* 減少時は素早く */
         }
+        /* ペナルティ時のフラッシュ */
+        .timer-penalty { background-color: var(--wrong) !important; }
 
         .portrait-frame {
             width: 160px;
@@ -82,10 +68,8 @@
             background: #fff;
             border-radius: 50%;
             overflow: hidden;
-            position: relative;
             transition: all 0.3s;
         }
-        
         .portrait-frame img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.2s; }
 
         .frame-correct { border-color: var(--correct); box-shadow: 0 0 25px var(--correct); transform: scale(1.1); }
@@ -113,31 +97,42 @@
             outline: none;
             text-align: center;
         }
-        #user-answer:focus { border-color: var(--era-color); }
 
+        .menu-btn {
+            background: #333;
+            color: white;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
         #next-btn { background: var(--era-color); display: none; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes angryShake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-8px); }
             75% { transform: translateX(8px); }
         }
         .angry-shake { animation: angryShake 0.1s ease-in-out infinite; animation-iteration-count: 3; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
     <div id="home-screen" class="screen active">
         <h1>歴史肖像画クイズ</h1>
-        <p>時間内なら何度でも回答可能！<br>正解を導き出し、彼らを満足させよ。</p>
+        <p>時間内なら何度でも回答可能！<br><span style="color:var(--wrong); font-weight:bold;">※誤答は残り時間が3秒減るぞ！</span></p>
         <button class="menu-btn" onclick="showScreen('era-screen')">挑戦を始める</button>
     </div>
 
     <div id="era-screen" class="screen">
-        <h2>時代を選択（1問30秒）</h2>
-        <button class="menu-btn" style="border-left: 8px solid #e74c3c;" onclick="startGame('sengoku')">戦国・江戸時代</button>
-        <button class="menu-btn" style="border-left: 8px solid #3498db;" onclick="startGame('ancient')">古代・中世</button>
+        <h2>時代を選択</h2>
+        <button class="menu-btn" onclick="startGame('sengoku')">戦国・江戸時代</button>
+        <button class="menu-btn" onclick="startGame('ancient')">古代・中世</button>
     </div>
 
     <div id="game-screen" class="screen">
@@ -169,7 +164,7 @@
         sengoku: {
             color: "#e74c3c",
             questions: [
-                { name: "織田信長", imgs: { default: "nobunaga.jpg", win: "nobunaga_win.jpg", lose: "nobunaga_lose.jpg" }, msg: "私が「楽市楽座」を最初に行った城下町はどこか？", answers: ["岐阜", "岐阜城", "ぎふ"], info: "1567年、信長は「岐阜」と改称し、ここから「楽市楽座」を広めました。" },
+                { name: "織田信長", imgs: { default: "nobunaga.jpg", win: "nobunaga_win.jpg", lose: "nobunaga_lose.jpg" }, msg: "私が「楽市楽座」を最初に行った城下町はどこか？", answers: ["岐阜", "岐阜城", "ぎふ"], info: "1567年、信長は「岐阜」から独占権を撤廃する「楽市楽座」を開始しました。" },
                 { name: "徳川家康", imgs: { default: "ieyasu.jpg", win: "ieyasu_win.jpg", lose: "ieyasu_lose.jpg" }, msg: "江戸幕府が開かれたのは西暦何年か？", answers: ["1603", "1603年"], info: "1603年、家康は征夷大将軍に任命され、江戸に幕府を開きました。" }
             ]
         },
@@ -177,7 +172,7 @@
             color: "#3498db",
             questions: [
                 { name: "クレオパトラ", imgs: { default: "cleopatra.jpg", win: "cleopatra_win.jpg", lose: "cleopatra_lose.jpg" }, msg: "私の死後、エジプトを支配した帝国はどこ？", answers: ["ローマ", "ローマ帝国", "ろーま"], info: "彼女の死後、エジプトはローマ帝国の属州となりました。" },
-                { name: "聖徳太子", imgs: { default: "shotoku.jpg", win: "shotoku_win.jpg", lose: "shotoku_lose.jpg" }, msg: "私が制定した、日本最初の憲法といえば何？", answers: ["十七条憲法", "17条憲法", "じゅうななじょうけんぽう"], info: "604年制定。官吏の心得を説いたもので、和の精神を強調しています。" }
+                { name: "聖徳太子", imgs: { default: "shotoku.jpg", win: "shotoku_win.jpg", lose: "shotoku_lose.jpg" }, msg: "私が制定した、日本最初の憲法といえば何？", answers: ["十七条憲法", "17条憲法", "じゅうななじょうけんぽう"], info: "604年制定。役人の心得を説いたもので、和の精神を強調しています。" }
             ]
         }
     };
@@ -188,7 +183,7 @@
     const TIME_LIMIT = 30; 
     let timeLeft = 0;
     let timerInterval;
-    let isLocked = false; // 回答処理中のロック
+    let isLocked = false;
 
     function showScreen(screenId) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -219,10 +214,11 @@
         input.value = '';
         input.disabled = false;
         document.getElementById('input-area').style.display = 'block';
-        document.getElementById('submit-btn').disabled = false;
         document.getElementById('next-btn').style.display = 'none';
         
-        startQuestionTimer();
+        timeLeft = TIME_LIMIT;
+        updateTimerBar();
+        startTimerLoop();
         setTimeout(() => input.focus(), 500);
     }
 
@@ -236,12 +232,10 @@
         }, 150);
     }
 
-    function startQuestionTimer() {
-        timeLeft = TIME_LIMIT;
-        updateTimerBar();
+    function startTimerLoop() {
         if (timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(() => {
-            timeLeft--;
+            timeLeft -= 1;
             updateTimerBar();
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
@@ -251,50 +245,62 @@
     }
 
     function updateTimerBar() {
-        const percent = (timeLeft / TIME_LIMIT) * 100;
-        document.getElementById('timer-bar-fill').style.width = percent + "%";
+        const fill = document.getElementById('timer-bar-fill');
+        const percent = Math.max(0, (timeLeft / TIME_LIMIT) * 100);
+        fill.style.width = percent + "%";
     }
 
-    // --- 何度でも挑戦できる回答チェック ---
     function checkAttempt() {
         if (isLocked || timeLeft <= 0) return;
 
         const data = currentEraData.questions[currentIdx];
         const userAnswer = document.getElementById('user-answer').value.trim();
         const portraitZone = document.getElementById('portrait-zone');
+        const timerFill = document.getElementById('timer-bar-fill');
         
         if (data.answers.includes(userAnswer)) {
-            // 正解：タイマーを止めて最終判定へ
             clearInterval(timerInterval);
             score++;
             finishQuestion('correct');
         } else {
-            // 不正解：リセットして再挑戦を促す
+            // --- ペナルティ処理 ---
             isLocked = true;
+            timeLeft -= 3; // 3秒マイナス
+            updateTimerBar();
+            
+            // 視覚的な警告
+            timerFill.classList.add('timer-penalty');
             changePortrait('lose');
             portraitZone.classList.add('frame-wrong', 'angry-shake');
             
-            // 0.8秒後に元に戻して再入力可能にする
+            // 時間切れチェック
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                finishQuestion('timeout');
+                return;
+            }
+
             setTimeout(() => {
-                if (timeLeft > 0) { // まだ時間があれば
-                    changePortrait('default');
-                    portraitZone.classList.remove('frame-wrong', 'angry-shake');
-                    document.getElementById('user-answer').value = '';
-                    document.getElementById('user-answer').focus();
-                    isLocked = false;
-                }
+                timerFill.classList.remove('timer-penalty');
+                changePortrait('default');
+                portraitZone.classList.remove('frame-wrong', 'angry-shake');
+                document.getElementById('user-answer').value = '';
+                document.getElementById('user-answer').focus();
+                isLocked = false;
             }, 800);
         }
     }
 
-    // 最終的な解説フェーズへの移行
     function finishQuestion(result) {
         isLocked = true;
         const data = currentEraData.questions[currentIdx];
         const portraitZone = document.getElementById('portrait-zone');
         const dialogue = document.getElementById('dialogue');
+        const timerFill = document.getElementById('timer-bar-fill');
         
+        timerFill.classList.remove('timer-penalty');
         let statusText = "";
+        
         if (result === 'correct') {
             statusText = "<span style='color:var(--correct)'>【 正解 】</span>";
             changePortrait('win');
@@ -303,6 +309,8 @@
             statusText = "<span style='color:var(--wrong)'>【 時間切れ 】</span>";
             changePortrait('lose');
             portraitZone.classList.add('frame-wrong');
+            timeLeft = 0;
+            updateTimerBar();
         }
 
         dialogue.innerHTML = `
@@ -311,7 +319,6 @@
         `;
 
         document.getElementById('user-answer').disabled = true;
-        document.getElementById('submit-btn').disabled = true;
         document.getElementById('input-area').style.display = 'none';
         document.getElementById('next-btn').style.display = 'block';
     }
