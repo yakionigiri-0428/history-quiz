@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI肖像画 歴史クイズ（シャッフル機能付）</title>
+    <title>AI肖像画 歴史クイズ（完全版）</title>
     <style>
         :root {
             --gold: #d4af37;
             --dark: #1e1e1e;
             --paper: #fdf5e6;
+            --correct: #4caf50; /* 正解時の色 */
+            --wrong: #f44336;   /* 不正解時の色 */
         }
 
         body {
@@ -20,6 +22,7 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            overflow: hidden; /* 演出時のハミ出し防止 */
         }
 
         #game-card {
@@ -31,24 +34,51 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.7);
             border: 3px double var(--gold);
             text-align: center;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        /* 進行状況表示 */
+        #progress {
+            color: var(--gold);
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 0.9rem;
         }
 
         .portrait-frame {
-            width: 220px;
-            height: 220px;
+            width: 200px;
+            height: 200px;
             margin: 0 auto 20px;
             border: 6px solid #333;
-            background: #ccc;
+            background: #ccc; /* 画像がない場合のプレースホルダー色 */
             overflow: hidden;
             border-radius: 50%;
             box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+            position: relative;
         }
 
+        /* 画像が読み込めない場合の代替テキストスタイル */
         .portrait-frame img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             transition: transform 0.4s ease-out;
+            display: block;
+        }
+
+        /* 肖像画の演出用エフェクト */
+        .portrait-frame::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 50%;
+            box-shadow: inset 0 0 0 0px var(--correct);
+            transition: box-shadow 0.3s ease;
+            pointer-events: none;
+        }
+        .correct-active .portrait-frame::after {
+            box-shadow: inset 0 0 20px 5px var(--correct);
         }
 
         .speech-bubble {
@@ -58,7 +88,19 @@
             border: 1px solid #ddd;
             margin-bottom: 20px;
             font-size: 1.1rem;
-            min-height: 50px;
+            min-height: 60px;
+            position: relative;
+        }
+
+        /* 解説部分のスタイル */
+        .info-text {
+            display: block;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+            border-top: 1px dashed #ccc;
+            padding-top: 10px;
+            animation: fadeIn 0.5s;
         }
 
         .choices {
@@ -76,12 +118,35 @@
             font-size: 0.95rem;
             border-radius: 4px;
             transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
         }
 
-        button.choice-btn:hover {
-            background: var(--gold);
-            color: white;
-            border-color: var(--gold);
+        /* ホバー（PCのみ） */
+        @media (hover: hover) {
+            button.choice-btn:not(:disabled):hover {
+                background: var(--gold);
+                color: white;
+                border-color: var(--gold);
+            }
+        }
+
+        /* ボタン無効化時のスタイル */
+        button.choice-btn:disabled {
+            cursor: default;
+            opacity: 0.7;
+        }
+
+        /* 正解・不正解ボタンのクラス */
+        button.choice-btn.correct-choice {
+            background-color: var(--correct) !important;
+            color: white !important;
+            border-color: var(--correct) !important;
+        }
+        button.choice-btn.wrong-choice {
+            background-color: var(--wrong) !important;
+            color: white !important;
+            border-color: var(--wrong) !important;
         }
 
         #next-btn {
@@ -89,42 +154,64 @@
             background: #333;
             color: white;
             width: 100%;
-            padding: 12px;
+            padding: 15px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             display: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #000;
+        }
+        #next-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #000;
         }
 
+        /* アニメーション定義 */
         .fade { animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* カード自体が揺れるアニメーション（不正解時） */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+        .shake-animation {
+            animation: shake 0.5s darkease-in-out;
+        }
+
     </style>
 </head>
 <body>
 
 <div id="game-card">
+    <div id="progress"></div>
+
     <div class="portrait-frame">
-        <img id="char-img" src="" alt="肖像画">
+        <img id="char-img" src="" alt="人物肖像">
     </div>
     
     <div class="speech-bubble" id="dialogue">読み込み中...</div>
 
     <div class="choices" id="choices-container"></div>
 
-    <button id="next-btn" onclick="nextStage()">次の人物へ</button>
+    <button id="next-btn" onclick="nextStage()"></button>
 </div>
 
 <script>
-    // --- データ設定 （history_game） ---
+    // --- データ設定（infoプロパティを追加） ---
     const quizData = [
         {
             name: "織田信長",
-            img: "nobunaga.jpg", 
+            img: "nobunaga.jpg", // ファイルがない場合はaltテキストが表示されます
             msg: "我は織田信長。私が「楽市楽座」を最初に行った城下町はどこか知っておるか？",
             options: ["小牧山城", "岐阜城", "清洲城", "安土城"],
-            answer: "岐阜城", // ★インデックスではなく「文字列」で判定するように改良
+            answer: "岐阜城",
             correct: "その通り！天下布武の始まりはこの地からよ。",
-            wrong: "笑わせるな。そんな基礎も知らぬとは。"
+            wrong: "笑わせるな。そんな基礎も知らぬとは。",
+            info: "解説：楽市楽座は、市場の独占権（座）を廃止し、誰でも自由に商売できるようにした政策。信長はこれを岐阜城下で大規模に行い、さらに安土城下でも実施して国を富ませた。"
         },
         {
             name: "クレオパトラ",
@@ -133,13 +220,14 @@
             options: ["ローマ帝国", "ペルシア帝国", "オスマン帝国", "モンゴル帝国"],
             answer: "ローマ帝国",
             correct: "正解よ。歴史の流れをよく理解しているわね。",
-            wrong: "残念。私の最後を汚さないで頂戴。"
+            wrong: "残念。私の最後を汚さないで頂戴。",
+            info: "解説：アクティウムの海戦でオクタウィアヌス率いるローマ軍に敗北。彼女の死後、古代エジプトプトレマイオス朝は滅亡し、ローマの属州となった。"
         }
     ];
 
     let currentIdx = 0;
 
-    // シャッフル関数 (Fisher-Yates)
+    // シャッフル関数
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -148,55 +236,120 @@
         return array;
     }
 
+    // ステージ読み込み
     function loadStage() {
         const data = quizData[currentIdx];
+        const card = document.getElementById('game-card');
         const img = document.getElementById('char-img');
         const dialogue = document.getElementById('dialogue');
         const container = document.getElementById('choices-container');
+        const progress = document.getElementById('progress');
         
         // リセット
+        card.classList.remove('correct-active', 'shake-animation');
         img.src = data.img;
-        img.style.transform = 'scale(1.0)';
-        dialogue.innerText = data.msg;
+        img.alt = data.name; // altテキストを設定
+        img.style.transform = 'scale(1.0) rotate(0deg)';
+        dialogue.innerHTML = data.msg; // HTMLとして扱う
         document.getElementById('next-btn').style.display = 'none';
         container.innerHTML = '';
 
-        // 選択肢をコピーしてシャッフル
+        // 進行状況表示
+        progress.innerText = `第 ${currentIdx + 1} 問 / 全 ${quizData.length} 問`;
+
+        // 選択肢をシャッフル
         const shuffledOptions = shuffleArray([...data.options]);
 
         shuffledOptions.forEach(opt => {
             const btn = document.createElement('button');
             btn.className = 'choice-btn';
             btn.innerText = opt;
-            btn.onclick = () => checkAnswer(opt, data.answer);
+            // 自分自身（btn）を引数に渡す
+            btn.onclick = () => checkAnswer(opt, btn);
             container.appendChild(btn);
         });
     }
 
-    function checkAnswer(selected, correct) {
+    // 答え合わせ
+    function checkAnswer(selected, selectedBtn) {
+        const data = quizData[currentIdx];
+        const card = document.getElementById('game-card');
         const dialogue = document.getElementById('dialogue');
-        const stageData = quizData[currentIdx];
+        const img = document.getElementById('char-img');
+        
+        // 全ボタンを無効化（連打防止）
+        const allButtons = document.querySelectorAll('.choice-btn');
+        allButtons.forEach(b => b.disabled = true);
 
-        if (selected === correct) {
-            dialogue.innerHTML = `<strong>【正解】</strong><br>${stageData.correct}`;
-            document.getElementById('next-btn').style.display = 'block';
-            document.querySelector('.portrait-frame img').style.transform = 'scale(1.1)';
+        if (selected === data.answer) {
+            // --- 正解の演出 ---
+            selectedBtn.classList.add('correct-choice'); // ボタンを緑に
+            card.classList.add('correct-active'); // フレームを光らせる
+            img.style.transform = 'scale(1.1)'; // 肖像画拡大
+            
+            // メッセージ + 解説を表示
+            dialogue.innerHTML = `<strong>【正解！】</strong><br>${data.correct}<span class="info-text">${data.info}</span>`;
+            
+            // 次へボタンを表示
+            const nextBtn = document.getElementById('next-btn');
+            if (currentIdx < quizData.length - 1) {
+                nextBtn.innerText = "次の人物へ →";
+            } else {
+                nextBtn.innerText = "結果を見る";
+            }
+            nextBtn.style.display = 'block';
+
         } else {
-            dialogue.innerText = stageData.wrong;
-            document.querySelector('.portrait-frame img').style.transform = 'scale(0.9)';
+            // --- 不正解の演出 ---
+            selectedBtn.classList.add('wrong-choice'); // ボタンを赤に
+            card.classList.add('shake-animation'); // カードを揺らす
+            img.style.transform = 'scale(0.9) rotate(-5deg)'; // 肖像画縮小・傾き
+            
+            dialogue.innerHTML = `<strong>【不正解…】</strong><br>${data.wrong}`;
+
+            // 演出終了後にリセットして再挑戦させる（1秒後）
+            setTimeout(() => {
+                card.classList.remove('shake-animation');
+                img.style.transform = 'scale(1.0) rotate(0deg)';
+                dialogue.innerHTML = data.msg; // 元の問いかけに戻す
+                
+                // ボタンの状態をリセット
+                allButtons.forEach(b => {
+                    b.disabled = false;
+                    b.classList.remove('wrong-choice');
+                });
+            }, 1000);
         }
     }
 
+    // 次のステージへ
     function nextStage() {
         currentIdx++;
         if (currentIdx < quizData.length) {
             loadStage();
         } else {
-            document.getElementById('dialogue').innerText = "見事！すべての歴史の試練を乗り越えました！";
-            document.getElementById('choices-container').innerHTML = '';
-            document.getElementById('next-btn').innerText = "最初からやり直す";
-            document.getElementById('next-btn').onclick = () => location.reload();
+            showResult();
         }
+    }
+
+    // 最終結果画面
+    function showResult() {
+        // 画像をトロフィーなどに変えても良い（ここではクリア画像がないので非表示）
+        document.querySelector('.portrait-frame').style.display = 'none';
+        document.getElementById('progress').style.display = 'none';
+
+        document.getElementById('dialogue').innerHTML = `
+            <div style="font-size:1.5rem; color:var(--gold); font-weight:bold; margin-bottom:10px;">天下統一！</div>
+            見事、すべての歴史の試練を乗り越えました！<br>
+            なたの知識は本物です。
+        `;
+        
+        document.getElementById('choices-container').innerHTML = '';
+        
+        const nextBtn = document.getElementById('next-btn');
+        nextBtn.innerText = "もう一度挑戦する";
+        nextBtn.style.display = 'block';
+        nextBtn.onclick = () => location.reload();
     }
 
     window.onload = loadStage;
