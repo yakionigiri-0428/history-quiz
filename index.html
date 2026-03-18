@@ -2,8 +2,8 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI歴史クイズ 大画版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI歴史肖像画クイズ フルスクリーン版</title>
     <style>
         :root {
             --gold: #d4af37;
@@ -15,108 +15,157 @@
         }
 
         body {
-            background-color: var(--dark);
+            background-color: var(--paper); /* 背景（和紙）を全体に */
             color: #333;
             font-family: 'Hiragino Mincho ProN', 'MS Mincho', serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* スマホのスクロールバウンス防止 */
+            height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
         }
 
+        /* 画面全体のレイアウト */
         .screen {
             display: none;
-            background: var(--paper);
-            width: 90%;
-            max-width: 500px; /* カード全体の最大幅は維持 */
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
-            border: 3px double var(--era-color);
-            text-align: center;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
             animation: fadeIn 0.4s ease-out;
+            position: relative;
         }
+        .active { display: flex; }
 
-        .active { display: block; }
-
-        /* タイマーバー */
-        #timer-container {
-            width: 100%;
-            height: 14px;
-            background: #ddd;
-            border-radius: 7px;
-            margin-bottom: 20px;
-            overflow: hidden;
-            border: 1px solid #ccc;
-        }
-        #timer-bar-fill {
-            height: 100%;
-            width: 100%;
-            background: var(--era-color);
-            transition: width 0.3s ease-out, background-color 0.3s;
-        }
-        .timer-penalty { background-color: var(--wrong) !important; }
-
-        /* --- ★肖像画フレームの大画面化 --- */
-        .portrait-frame {
-            width: 220px;  /* 160px -> 220px */
-            height: 220px; /* 160px -> 220px */
-            margin: 0 auto 25px; /* 下のマージンを少し広く */
-            border: 7px solid #333; /* 枠も少し太く */
-            background: #fff;
-            border-radius: 50%;
-            overflow: hidden;
-            transition: all 0.3s;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3); /* 影を強調 */
-        }
-        .portrait-frame img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.2s; }
-
-        /* サイズ拡大に合わせて拡大率を調整 */
-        .frame-correct { border-color: var(--correct); box-shadow: 0 0 30px var(--correct); transform: scale(1.05); }
-        .frame-wrong { border-color: var(--wrong); box-shadow: 0 0 20px var(--wrong); }
-
-        .speech-bubble {
-            background: white;
+        /* --- ホーム画面・時代選択画面（フルスクリーン） --- */
+        #home-screen, #era-screen, #result-screen {
+            justify-content: center;
+            align-items: center;
             padding: 20px;
-            border-radius: 15px;
-            border: 1px solid #eee;
-            margin-bottom: 20px;
-            min-height: 90px;
+            box-sizing: border-box;
+            background-color: var(--dark); /* ホーム系はダーク背景 */
+            color: #fff;
+        }
+        
+        h1, h2 { border-bottom: 2px solid var(--era-color); padding-bottom: 10px; text-align: center; }
+        
+        .menu-btn {
+            background: #fff;
+            color: var(--dark);
+            padding: 20px;
+            margin: 15px 0;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 80%;
+            max-width: 300px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* --- ゲーム画面（フルスクリーン・ダイナミック） --- */
+        #game-screen {
+            background-color: var(--paper); /* ゲーム中は和紙背景 */
+            justify-content: flex-start; /* 上から順に配置 */
+        }
+
+        /* 画面上部：タイマーと進捗 */
+        #header-zone {
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.05);
+            border-bottom: 1px solid #ccc;
+        }
+        #game-progress { font-weight: bold; }
+        #timer-text { font-weight: bold; color: var(--wrong); }
+
+        /* 画面中央上部：巨大肖像画 */
+        #portrait-zone-outer {
+            width: 100%;
+            position: relative;
+            background: #333; /* 画像がない場合の背景 */
+            border-bottom: 5px solid var(--dark);
+        }
+        .portrait-frame-inner {
+            width: 100%;
+            height: 40vh; /* 画面の高さの40%を肖像画に */
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s;
+        }
+        .portrait-frame-inner img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; /* 画面いっぱいに表示 */
+            transition: opacity 0.2s; 
+        }
+
+        /* 正解・不正解時の演出（画面全体） */
+        .frame-correct { border-color: var(--correct) !important; box-shadow: 0 0 50px var(--correct); }
+        .frame-wrong { border-color: var(--wrong) !important; box-shadow: 0 0 30px var(--wrong); }
+
+        /* 画面中央下部：セリフ */
+        #dialogue-zone {
+            flex-grow: 1; /* 残りのスペースを埋める */
+            padding: 20px;
+            overflow-y: auto; /* セリフが長い場合スクロール */
+            box-sizing: border-box;
+        }
+        .speech-bubble {
+            font-size: 1.1rem;
+            line-height: 1.6;
             text-align: left;
         }
+        .info-box { margin-top: 15px; padding-top: 15px; border-top: 2px dotted var(--era-color); color: #555; }
 
-        .info-box { margin-top: 12px; padding-top: 12px; border-top: 2px dotted var(--era-color); font-size: 0.95rem; color: #444; }
-
+        /* 画面下部：入力・操作エリア */
+        #input-zone {
+            padding: 15px;
+            background: rgba(255,255,255,0.9);
+            border-top: 1px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
         #user-answer {
-            width: 85%;
+            width: 90%;
             padding: 15px;
             font-size: 1.2rem;
             margin-bottom: 10px;
             border-radius: 8px;
             border: 2px solid #ddd;
-            outline: none;
             text-align: center;
         }
-
-        .menu-btn {
-            background: #333;
-            color: white;
-            padding: 15px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
+        #submit-btn {
+            background: var(--dark);
+            color: #fff;
             width: 100%;
-            font-size: 1.1rem;
-            font-weight: bold;
+            margin: 0;
+            padding: 15px;
         }
-        #next-btn { background: var(--era-color); display: none; }
 
+        /* 次へボタン（画面下部に固定） */
+        #next-btn {
+            background: var(--era-color);
+            display: none;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            margin: 0;
+            border-radius: 0;
+            padding: 20px;
+        }
+
+        /* アニメーション */
         @keyframes angryShake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            75% { transform: translateX(8px); }
+            25% { transform: translateX(-15px); }
+            75% { transform: translateX(15px); }
         }
         .angry-shake { animation: angryShake 0.1s ease-in-out infinite; animation-iteration-count: 3; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -126,7 +175,7 @@
 
     <div id="home-screen" class="screen active">
         <h1>歴史肖像画クイズ</h1>
-        <p>時間内なら何度でも回答可能！<br><span style="color:var(--wrong); font-weight:bold;">※誤答は残り時間が3秒減るぞ！</span></p>
+        <p>画面いっぱい、彼らが迫る。</p>
         <button class="menu-btn" onclick="showScreen('era-screen')">挑戦を始める</button>
     </div>
 
@@ -137,26 +186,33 @@
     </div>
 
     <div id="game-screen" class="screen">
-        <div id="timer-container"><div id="timer-bar-fill"></div></div>
-        <div id="game-progress" style="font-weight: bold; margin-bottom: 10px;"></div>
         
-        <div id="portrait-zone" class="portrait-frame">
-            <img id="char-img" src="" alt="人物肖像">
+        <div id="header-zone">
+            <div id="game-progress"></div>
+            <div id="timer-text"></div>
+        </div>
+        
+        <div id="portrait-zone-outer" class="portrait-frame-outer">
+            <div id="portrait-zone-inner" class="portrait-frame-inner">
+                <img id="char-img" src="" alt="人物肖像">
+            </div>
         </div>
 
-        <div class="speech-bubble" id="dialogue"></div>
+        <div id="dialogue-zone">
+            <div class="speech-bubble" id="dialogue"></div>
+        </div>
 
-        <div id="input-area">
+        <div id="input-zone">
             <input type="text" id="user-answer" placeholder="答えを入力" autocomplete="off">
             <button id="submit-btn" class="menu-btn" onclick="checkAttempt()">回答する</button>
         </div>
         
-        <button id="next-btn" class="menu-btn" onclick="nextQuestion()">次の問題へ進む</button>
+        <button id="next-btn" class="menu-btn" onclick="nextQuestion()">次の問題へ進む →</button>
     </div>
 
     <div id="result-screen" class="screen">
         <h1>結果発表</h1>
-        <p id="final-score" style="font-size: 1.4rem; font-weight: bold;"></p>
+        <p id="final-score" style="font-size: 1.5rem; font-weight: bold;"></p>
         <button class="menu-btn" onclick="location.reload()">ホームに戻る</button>
     </div>
 
@@ -165,7 +221,7 @@
         sengoku: {
             color: "#e74c3c",
             questions: [
-                { name: "織田信長", imgs: { default: "nobunaga.jpg", win: "nobunaga_win.jpg", lose: "nobunaga_lose.jpg" }, msg: "私が「楽市楽座」を最初に行った城下町はどこか？", answers: ["岐阜", "岐阜城", "ぎふ"], info: "1567年、信長は「岐阜」から独占権を撤廃する「楽市楽座」を開始しました。" },
+                { name: "織田信長", imgs: { default: "nobunaga.jpg", win: "nobunaga_win.jpg", lose: "nobunaga_lose.jpg" }, msg: "「楽市楽座」を最初に行った城下町はどこか？", answers: ["岐阜", "岐阜城", "ぎふ"], info: "1567年、信長は「岐阜」から独占権を撤廃する「楽市楽座」を開始しました。" },
                 { name: "徳川家康", imgs: { default: "ieyasu.jpg", win: "ieyasu_win.jpg", lose: "ieyasu_lose.jpg" }, msg: "江戸幕府が開かれたのは西暦何年か？", answers: ["1603", "1603年"], info: "1603年、家康は征夷大将軍に任命され、江戸に幕府を開きました。" }
             ]
         },
@@ -173,7 +229,7 @@
             color: "#3498db",
             questions: [
                 { name: "クレオパトラ", imgs: { default: "cleopatra.jpg", win: "cleopatra_win.jpg", lose: "cleopatra_lose.jpg" }, msg: "私の死後、エジプトを支配した帝国はどこ？", answers: ["ローマ", "ローマ帝国", "ろーま"], info: "彼女の死後、エジプトはローマ帝国の属州となりました。" },
-                { name: "聖徳太子", imgs: { default: "shotoku.jpg", win: "shotoku_win.jpg", lose: "shotoku_lose.jpg" }, msg: "私が制定した、日本最初の憲法といえば何？", answers: ["十七条憲法", "17条憲法", "じゅうななじょうけんぽう"], info: "604年制定。役人の心得を説いたもので、和の精神を強調しています。" }
+                { name: "聖徳太子", imgs: { default: "shotoku.jpg", win: "shotoku_win.jpg", lose: "shotoku_lose.jpg" }, msg: "日本最初の憲法といえば何？", answers: ["十七条憲法", "17条憲法", "じゅうななじょうけんぽう"], info: "604年制定。役人の心得を説いたもので、和の精神を強調しています。" }
             ]
         }
     };
@@ -203,22 +259,24 @@
     function loadQuestion() {
         isLocked = false;
         const data = currentEraData.questions[currentIdx];
-        const portraitZone = document.getElementById('portrait-zone');
+        const portraitOuter = document.getElementById('portrait-zone-outer');
+        const portraitInner = document.getElementById('portrait-zone-inner');
         
         changePortrait('default');
-        portraitZone.classList.remove('frame-correct', 'frame-wrong', 'angry-shake');
+        portraitOuter.classList.remove('frame-correct', 'frame-wrong', 'angry-shake');
+        portraitInner.classList.remove('angry-shake');
         
-        document.getElementById('dialogue').innerHTML = `<strong>${data.name}：</strong><br>${data.msg}`;
-        document.getElementById('game-progress').innerText = `【 第 ${currentIdx + 1} 問 / 全 ${currentEraData.questions.length} 問 】`;
+        document.getElementById('dialogue').innerHTML = `<strong>${data.name}：</strong> ${data.msg}`;
+        document.getElementById('game-progress').innerText = `${currentIdx + 1} / ${currentEraData.questions.length}`;
         
         const input = document.getElementById('user-answer');
         input.value = '';
         input.disabled = false;
-        document.getElementById('input-area').style.display = 'block';
+        document.getElementById('input-zone').style.display = 'flex';
         document.getElementById('next-btn').style.display = 'none';
         
         timeLeft = TIME_LIMIT;
-        updateTimerBar();
+        updateTimerText();
         startTimerLoop();
         setTimeout(() => input.focus(), 500);
     }
@@ -237,7 +295,7 @@
         if (timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(() => {
             timeLeft -= 1;
-            updateTimerBar();
+            updateTimerText();
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
                 finishQuestion('timeout');
@@ -245,10 +303,8 @@
         }, 1000);
     }
 
-    function updateTimerBar() {
-        const fill = document.getElementById('timer-bar-fill');
-        const percent = Math.max(0, (timeLeft / TIME_LIMIT) * 100);
-        fill.style.width = percent + "%";
+    function updateTimerText() {
+        document.getElementById('timer-text').innerText = `残り ${Math.max(0, timeLeft)}秒`;
     }
 
     function checkAttempt() {
@@ -256,8 +312,8 @@
 
         const data = currentEraData.questions[currentIdx];
         const userAnswer = document.getElementById('user-answer').value.trim();
-        const portraitZone = document.getElementById('portrait-zone');
-        const timerFill = document.getElementById('timer-bar-fill');
+        const portraitOuter = document.getElementById('portrait-zone-outer');
+        const portraitInner = document.getElementById('portrait-zone-inner');
         
         if (data.answers.includes(userAnswer)) {
             clearInterval(timerInterval);
@@ -266,11 +322,11 @@
         } else {
             isLocked = true;
             timeLeft -= 3;
-            updateTimerBar();
+            updateTimerText();
             
-            timerFill.classList.add('timer-penalty');
             changePortrait('lose');
-            portraitZone.classList.add('frame-wrong', 'angry-shake');
+            portraitOuter.classList.add('frame-wrong');
+            portraitInner.classList.add('angry-shake');
             
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
@@ -279,9 +335,9 @@
             }
 
             setTimeout(() => {
-                timerFill.classList.remove('timer-penalty');
                 changePortrait('default');
-                portraitZone.classList.remove('frame-wrong', 'angry-shake');
+                portraitOuter.classList.remove('frame-wrong');
+                portraitInner.classList.remove('angry-shake');
                 document.getElementById('user-answer').value = '';
                 document.getElementById('user-answer').focus();
                 isLocked = false;
@@ -292,23 +348,22 @@
     function finishQuestion(result) {
         isLocked = true;
         const data = currentEraData.questions[currentIdx];
-        const portraitZone = document.getElementById('portrait-zone');
+        const portraitOuter = document.getElementById('portrait-zone-outer');
+        const portraitInner = document.getElementById('portrait-zone-inner');
         const dialogue = document.getElementById('dialogue');
-        const timerFill = document.getElementById('timer-bar-fill');
         
-        timerFill.classList.remove('timer-penalty');
         let statusText = "";
         
         if (result === 'correct') {
             statusText = "<span style='color:var(--correct)'>【 正解 】</span>";
             changePortrait('win');
-            portraitZone.classList.add('frame-correct');
+            portraitOuter.classList.add('frame-correct');
         } else {
             statusText = "<span style='color:var(--wrong)'>【 時間切れ 】</span>";
             changePortrait('lose');
-            portraitZone.classList.add('frame-wrong');
+            portraitOuter.classList.add('frame-wrong');
             timeLeft = 0;
-            updateTimerBar();
+            updateTimerText();
         }
 
         dialogue.innerHTML = `
@@ -317,11 +372,18 @@
         `;
 
         document.getElementById('user-answer').disabled = true;
-        document.getElementById('input-area').style.display = 'none';
+        document.getElementById('input-zone').style.display = 'none';
+        
+        // 解説が出た後は巨大画像エリアを少し縮小してセリフを見やすくする演出
+        document.getElementById('portrait-zone-inner').style.height = '25vh';
+        
         document.getElementById('next-btn').style.display = 'block';
     }
 
     function nextQuestion() {
+        // 次へ進むときに画像エリアのサイズを元に戻す
+        document.getElementById('portrait-zone-inner').style.height = '40vh';
+        
         currentIdx++;
         if (currentIdx < currentEraData.questions.length) {
             loadQuestion();
