@@ -72,3 +72,49 @@
     }
     // ...このように、人物名、プロンプト、問題をセットにして増やしていきます。
 ]
+// 追加問題：戦国・武将と合戦セレクション
+[
+    { 
+        name: "島津義弘", 
+        prompt: "Fierce samurai commander Shimazu Yoshihiro, 'The Demon Shimazu', heavy armor, Sekigahara battlefield background",
+        msg: "関ヶ原の戦いで、敵陣の真っ只中を突破して退却した驚異の作戦を何という？", 
+        answers: ["島津の退き口", "のきぐち", "しまづののきぐち"], 
+        info: "敵軍を真っ向から突き抜けて薩摩へ帰還した、驚異の突破劇です。" 
+    },
+    { 
+        name: "松永久秀", 
+        prompt: "A cunning elderly daimyo Matsunaga Hisahide, holding a precious tea kettle, fire and smoke background",
+        msg: "私が信長に屈服する際、一緒に爆死させたと伝わる名茶器の名前は？", 
+        answers: ["平蜘蛛", "古天明平蜘蛛", "ひらぐも"], 
+        info: "日本史上初の「爆死」を遂げた人物（諸説あり）として有名です。" 
+    },
+    { 
+        name: "今川義元", 
+        prompt: "Aristocratic daimyo Imagawa Yoshimoto, elegant armor, rainy Okehazama forest background",
+        msg: "1560年、私が織田信長の奇襲により敗死した戦いの場所はどこ？", 
+        answers: ["桶狭間", "おけはざま"], 
+        info: "この勝利により、無名だった信長の名が全国に轟きました。" 
+    },
+    { 
+        name: "黒田官兵衛", 
+        prompt: "Brilliant strategist Kuroda Kanbei, red hood (josui), holding a map, intellectual expression",
+        msg: "秀吉の軍師として活躍した私。後に名乗った「如水」という号の由来となった言葉は？", 
+        answers: ["水のごとく", "みずのごとく"], 
+        info: "「水は自ら動き、他を動かす」という水の五則から取られました。" 
+    },
+    { 
+        name: "真田昌幸", 
+        prompt: "Cunning strategist Sanada Masayuki, father of Yukimura, layered armor, wise and tricky expression",
+        msg: "徳川の大軍を二度にわたって退けた、私の本拠地は何城？", 
+        answers: ["上田城", "うえだじょう"], 
+        info: "真田家は少ない兵力で徳川の猛攻をしのぎ、その名を高めました。" 
+    },
+    { 
+        name: "本多忠勝", 
+        prompt: "The invincible general Honda Tadakatsu, deer antler helmet, long spear Tonbogiri, imposing posture",
+        msg: "生涯57回の戦いでかすり傷一つ負わなかったといわれる私が持つ、名槍の名前は？", 
+        answers: ["蜻蛉切", "とんぼぎり"], 
+        info: "天下三名槍の一つ。止まった蜻蛉が真っ二つになったという逸話が由来です。" 
+    }
+    // ...ここに同様の形式で200問まで追加していきます
+]
