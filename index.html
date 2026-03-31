@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI歴史肖像画クイズ - 称号認定版</title>
+    <title>AI歴史肖像画クイズ - ランキング参戦版</title>
     <style>
         :root {
             --gold: #d4af37;
@@ -32,7 +32,7 @@
         .screen {
             position: relative; z-index: 10; width: 100%; height: 100%;
             display: none; flex-direction: column; box-sizing: border-box;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0,0,0,0.6); /* 全体的に少し暗くして文字を浮かす */
         }
         .active { display: flex; }
 
@@ -58,26 +58,11 @@
             font-weight: bold; cursor: pointer; width: 100%; max-width: 300px;
         }
 
-        /* 称号用のスタイル */
-        .title-display {
-            font-size: 1.5rem;
-            color: var(--gold);
-            background: rgba(255,255,255,0.1);
-            padding: 10px 20px;
-            border-radius: 50px;
-            margin: 10px 0;
-            border: 2px solid var(--gold);
-            text-shadow: 0 0 10px rgba(212,175,55,0.5);
-            display: inline-block;
-        }
-
         /* ランキング表示用テーブル */
         .ranking-table {
             width: 100%; margin-top: 15px; border-collapse: collapse; color: #fff;
-            font-size: 0.9rem;
         }
-        .ranking-table th, .ranking-table td { border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px; text-align: left; }
-        .ranking-table th { background: rgba(255,255,255,0.1); }
+        .ranking-table th, .ranking-table td { border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px; }
         .gold-rank { color: var(--gold); font-weight: bold; }
 
         .wrong-flash { animation: screenShake 0.1s infinite; background-color: rgba(255, 0, 0, 0.2); }
@@ -119,11 +104,9 @@
 
     <div id="result-screen" class="screen" style="justify-content: center; align-items: center; padding: 20px;">
         <h1 style="color:var(--gold); margin-bottom:5px;">戦績発表</h1>
-        <div id="final-stats" style="color:#fff; text-align:center;"></div>
+        <div id="final-stats" style="color:#fff; text-align:center; margin-bottom:20px;"></div>
         
-        <div id="title-area" class="title-display"></div>
-        
-        <div style="background:rgba(255,255,255,0.1); padding:20px; border-radius:15px; width:100%; max-width:450px; margin-top:20px;">
+        <div style="background:rgba(255,255,255,0.1); padding:20px; border-radius:15px; width:100%; max-width:400px;">
             <h3 style="color:var(--gold); margin:0 0 10px 0; text-align:center;">殿堂入り（TOP 5）</h3>
             <table class="ranking-table" id="ranking-list"></table>
         </div>
@@ -147,7 +130,6 @@
     let currentEraData = null;
     let currentIdx = 0;
     let totalScore = 0;
-    let correctCount = 0; // 正解数をカウントする変数を追加
     let timeLeft = 30;
     let timerInterval;
     let isLocked = false;
@@ -166,7 +148,7 @@
     function startGame(eraKey) {
         currentEraData = allQuizData[eraKey];
         document.documentElement.style.setProperty('--era-color', currentEraData.color);
-        currentIdx = 0; totalScore = 0; correctCount = 0; // 初期化
+        currentIdx = 0; totalScore = 0;
         showScreen('game-screen');
         loadQuestion();
     }
@@ -224,7 +206,7 @@
         const ans = document.getElementById('user-answer').value.trim();
         
         if (data.answers.includes(ans)) {
-            correctCount++; // 正解数をインクリメント
+            // スコア計算：正解(1000点) + 残り秒数×50点ボーナス
             const bonus = timeLeft * 50;
             totalScore += (1000 + bonus);
             finishQuestion('correct');
@@ -269,63 +251,28 @@
         else showFinalResult();
     }
 
-    // --- 称号判定ロジック ---
-    function getTitle(score, correctCount, totalCount) {
-        const perfectScorePossible = totalCount * 2500; // 1問1000点+30秒×50点=2500点
-        if (totalCount === 0) return "迷い込んだ農民";
-        const ratio = score / perfectScorePossible;
-
-        if (correctCount === totalCount && ratio > 0.8) return "神速の聖人";
-        if (correctCount === totalCount) return "知略の将軍";
-        if (correctCount >= totalCount / 2) return "歴戦の侍";
-        if (correctCount > 0) return "修行中の身";
-        return "迷い込んだ農民";
-    }
-
-    // --- 結果表示の修正 ---
     function showFinalResult() {
         showScreen('result-screen');
         document.getElementById('bg-image').style.opacity = 0.3;
-        
-        const totalCount = currentEraData.questions.length;
-        const myTitle = getTitle(totalScore, correctCount, totalCount);
-
-        document.getElementById('final-stats').innerHTML = `
-            <p style="margin:0;">${playerName}殿</p>
-            <span style="font-size:2.5rem; color:var(--gold); font-weight:bold;">${totalScore.toLocaleString()} 点</span>
-            <p>（正解数: ${correctCount} / ${totalCount}）</p>
-        `;
-        
-        const titleArea = document.getElementById('title-area');
-        titleArea.innerText = `称号：${myTitle}`;
-
-        saveAndDisplayRanking(myTitle);
+        document.getElementById('final-stats').innerHTML = `${playerName}殿 の合計スコア<br><span style="font-size:2.5rem; color:var(--gold);">${totalScore}</span>`;
+        saveAndDisplayRanking();
     }
 
-    // --- ★ランキング保存・表示の修正（名前の横に称号を表示） ---
-    function saveAndDisplayRanking(myTitle) {
-        // バージョンを変更して、古いデータと区別する
-        let ranking = JSON.parse(localStorage.getItem('historyQuizRankingV3') || '[]');
-        ranking.push({ 
-            name: playerName, 
-            score: totalScore, 
-            title: myTitle,
-            date: new Date().toLocaleDateString() 
-        });
-        
+    function saveAndDisplayRanking() {
+        let ranking = JSON.parse(localStorage.getItem('historyQuizRanking') || '[]');
+        ranking.push({ name: playerName, score: totalScore, date: new Date().toLocaleDateString() });
         ranking.sort((a, b) => b.score - a.score);
         ranking = ranking.slice(0, 5); // TOP 5のみ保持
-        localStorage.setItem('historyQuizRankingV3', JSON.stringify(ranking));
+        localStorage.setItem('historyQuizRanking', JSON.stringify(ranking));
 
         const listEl = document.getElementById('ranking-list');
-        // ヘッダーを修正（称号列を廃止）
-        listEl.innerHTML = `<tr><th>位</th><th>名 (称号)</th><th>点</th></tr>`;
+        listEl.innerHTML = `<tr><th>位</th><th>名前</th><th>点</th></tr>`;
         ranking.forEach((entry, index) => {
-            const isMe = (entry.name === playerName && entry.score === totalScore && entry.title === myTitle);
+            const isMe = (entry.name === playerName && entry.score === totalScore);
             listEl.innerHTML += `
                 <tr style="${isMe ? 'background:rgba(212,175,55,0.2);' : ''}">
                     <td class="${index === 0 ? 'gold-rank' : ''}">${index + 1}</td>
-                    <td>${entry.name} <span style="font-size:0.8em; color:#bbb;">(${entry.title})</span></td>
+                    <td>${entry.name}</td>
                     <td>${entry.score.toLocaleString()}</td>
                 </tr>`;
         });
