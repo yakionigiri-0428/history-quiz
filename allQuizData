@@ -1,0 +1,74 @@
+// 戦国・江戸セレクション（追加分）
+[
+    { 
+        name: "豊臣秀吉", 
+        prompt: "A historical portrait of Toyotomi Hideyoshi, Japanese regent, colorful samurai armor, smiling slightly, vibrant traditional background",
+        msg: "私が天下統一の足がかりとして、大阪に築いた日本最大級の城は何？", 
+        answers: ["大坂城", "大阪城", "おおさかじょう"], 
+        info: "1583年から築城を開始。当時は「大坂」と表記されていました。" 
+    },
+    { 
+        name: "明智光秀", 
+        prompt: "A serious portrait of Akechi Mitsuhide, samurai commander, light blue armor, calm but cold expression, rainy Kyoto background",
+        msg: "1582年、私が主君・織田信長を襲撃した事件を「何の変」という？", 
+        answers: ["本能寺の変", "ほんのうじのへん"], 
+        info: "「敵は本能寺にあり」という言葉で有名。この後「三日天下」となりました。" 
+    },
+    { 
+        name: "上杉謙信", 
+        prompt: "Portrait of Uesugi Kenshin, 'The Dragon of Echigo', wearing a white hooded cowl over armor, spiritual and fierce gaze",
+        msg: "武田信玄と5回にわたって戦った、信州の地名はどこ？", 
+        answers: ["川中島", "かわなかじま"], 
+        info: "北信濃の支配権を巡る激戦。特に4回目の戦いが最も激しかったと言われます。" 
+    },
+    { 
+        name: "武田信玄", 
+        prompt: "Portrait of Takeda Shingen, 'The Tiger of Kai', iconic red armor with white mane helmet, holding a war fan (gunbai)",
+        msg: "私の軍旗に記された、孫子の言葉から引用された四字熟語といえば？", 
+        answers: ["風林火山", "ふうりんかざん"], 
+        info: "疾きこと風の如く、徐かなること林の如く、侵掠すること火の如く、動かざること山の如し。" 
+    },
+    { 
+        name: "伊達政宗", 
+        prompt: "Portrait of Date Masamune, 'One-Eyed Dragon', black armor with a large gold crescent moon crest on helmet, eye patch",
+        msg: "私が現在の宮城県に築いた、仙台藩の拠点は何城？", 
+        answers: ["仙台城", "せんだいじょう", "青葉城"], 
+        info: "断崖絶壁に守られた要塞。別名「青葉城」とも呼ばれます。" 
+    },
+    { 
+        name: "真田幸村", 
+        prompt: "Portrait of Sanada Yukimura, 'The Crimson Demon of War', all-red armor with antlers on helmet, heroic expression",
+        msg: "大坂冬の陣で、私が大坂城の南側に築いた出城（砦）の名前は？", 
+        answers: ["真田丸", "さなだまる"], 
+        info: "この砦で徳川軍を圧倒し、その武名は語り草となりました。" 
+    },
+    { 
+        name: "石田三成", 
+        prompt: "Portrait of Ishida Mitsunari, loyal commander, formal samurai robes, intellectual and stern face, Sekigahara background",
+        msg: "1600年、私が西軍を率いて徳川家康と戦った場所はどこ？", 
+        answers: ["関ヶ原", "せきがはら"], 
+        info: "天下分け目の戦い。小早川秀秋の寝返りにより西軍は敗北しました。" 
+    },
+    { 
+        name: "竹中半兵衛", 
+        prompt: "Portrait of Takenaka Hanbei, brilliant strategist, young and pale face, elegant kimono, holding a map or scroll",
+        msg: "わずか16人で奪取したといわれる、斎藤龍興の居城は何城？", 
+        answers: ["稲葉山城", "いなばやまじょう"], 
+        info: "後の岐阜城。この功績により、信長に軍師としてスカウトされました。" 
+    },
+    { 
+        name: "北条早雲", 
+        prompt: "Portrait of Hojo Soun, the first Sengoku Daimyo, older wise face, simple but strong armor, Sagami bay background",
+        msg: "下剋上の先駆けとなった私が、本拠地とした小田原の前の拠点は？", 
+        answers: ["韮山城", "にらやまじょう"], 
+        info: "伊豆を平定し、北条五代の繁栄の基礎を築きました。" 
+    },
+    { 
+        name: "毛利元就", 
+        prompt: "Portrait of Mori Motonari, wise strategist, older samurai in green robes, holding three arrows",
+        msg: "息子たちに結束を説いたとされる、有名な逸話は何？", 
+        answers: ["三本の矢", "さんぼんのや"], 
+        info: "1本では折れるが3本束ねれば折れないという、毛利一族の結束を象徴する話です。" 
+    }
+    // ...このように、人物名、プロンプト、問題をセットにして増やしていきます。
+]
