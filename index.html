@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI歴史肖像画クイズ - 決定版（ヒント＆ランダム実装）</title>
+    <title>AI歴史肖像画クイズ - 決定版</title>
     <style>
         :root {
             --gold: #d4af37;
@@ -28,7 +28,6 @@
         }
 
         @keyframes zoomIn { from { transform: scale(1.0); } to { transform: scale(1.3); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         .screen {
             position: relative; z-index: 10; width: 100%; height: 100%;
@@ -80,13 +79,13 @@
 
     <div id="name-screen" class="screen active" style="justify-content: center; align-items: center;">
         <h1 style="color:var(--gold);">名乗りを上げよ</h1>
-        <input type="text" id="player-name" placeholder="名前を入力（例：信濃の虎）" maxlength="10">
+        <input type="text" id="player-name" placeholder="名前を入力" maxlength="10">
         <button class="menu-btn" onclick="goToEraSelect()">参戦する</button>
     </div>
 
     <div id="era-screen" class="screen" style="justify-content: center; align-items: center;">
         <h2 style="color:#fff;">戦場を選ぶ、<span id="display-player-name"></span>殿</h2>
-        <button class="menu-btn" onclick="startGame('sengoku')" style="margin-bottom:15px;">戦国・江戸 (30問選出)</button>
+        <button class="menu-btn" onclick="startGame('sengoku')" style="margin-bottom:15px;">戦国・江戸</button>
         <button class="menu-btn" onclick="startGame('ancient')">古代・中世</button>
     </div>
 
@@ -119,20 +118,16 @@
     </div>
 
 <script>
-    // 問題データベース（ここに200問追加していく）
+    // 問題データ（ここに200問まで追加可能）
     const allQuizData = {
         sengoku: { color: "#e74c3c", questions: [
             { name: "織田信長", imgs: { default: "nobunaga.jpg", win: "nobunaga_win.jpg", lose: "nobunaga_lose.jpg" }, msg: "「楽市楽座」を最初に行った城下町はどこか？", answers: ["岐阜", "岐阜城", "ぎふ"], info: "1567年、信長は「岐阜」から独占権を撤廃する「楽市楽座」を開始。" },
             { name: "徳川家康", imgs: { default: "ieyasu.jpg", win: "ieyasu_win.jpg", lose: "ieyasu_lose.jpg" }, msg: "江戸幕府が開かれたのは西暦何年か？", answers: ["1603", "1603年"], info: "1603年、家康は征夷大将軍に任命され、江戸に幕府を開きました。" },
-            { name: "豊臣秀吉", imgs: { default: "hideyoshi.jpg", win: "hideyoshi_win.jpg", lose: "hideyoshi_lose.jpg" }, msg: "私が天下統一の拠点として築いた、黄金の茶室でも有名な城は？", answers: ["大坂城", "大阪城", "おおさかじょう"], info: "1583年から築城。難攻不落の巨城として知られました。" },
-            { name: "明智光秀", imgs: { default: "mitsuhide.jpg", win: "win.jpg", lose: "lose.jpg" }, msg: "1582年、私が主君・信長を襲撃した事件を何という？", answers: ["本能寺の変", "ほんのうじのへん"], info: "京都の本能寺に宿泊していた信長を急襲しました。" },
-            { name: "武田信玄", imgs: { default: "shingen.jpg", win: "win.jpg", lose: "lose.jpg" }, msg: "私の軍旗に記された、孫子の言葉から引用された四字熟語といえば？", answers: ["風林火山", "ふうりんかざん"], info: "「其の疾きこと風の如く、其の徐かなること林の如く...」から引用。" }
-            { name: "織田信長", prompt: "A realistic portrait of Oda Nobunaga, 'The Demon King', black lacquer armor, commanding gaze, burning temple background", msg: "私が掲げた、武力によって天下を統一するというスローガンは何？", answers: ["天下布武", "てんかふぶ"], info: "1567年頃から使い始めた印章に記されています。" },
-     const sengokuQuestions = [
-        ];// ※ここにさらに195問ほど追加可能
+            { name: "豊臣秀吉", imgs: { default: "hideyoshi.jpg", win: "hideyoshi_win.jpg", lose: "hideyoshi_lose.jpg" }, msg: "私が天下統一の拠点として築いた、黄金の茶室でも有名な城は？", answers: ["大坂城", "大阪城", "おおさかじょう"], info: "1583年から築城。難攻不落の巨城として知られました。" }
         ]},
         ancient: { color: "#3498db", questions: [
-            { name: "聖徳太子", imgs: { default: "shotoku.jpg", win: "win.jpg", lose: "lose.jpg" }, msg: "私が制定した、日本最初の憲法といえば何？", answers: ["十七条憲法", "17条憲法", "じゅうななじょうけんぽう"], info: "604年制定。和の精神を説いたものです。" }
+            { name: "クレオパトラ", imgs: { default: "cleopatra.jpg", win: "cleopatra_win.jpg", lose: "cleopatra_lose.jpg" }, msg: "私の死後、エジプトを支配した帝国はどこ？", answers: ["ローマ", "ローマ帝国", "ろーま"], info: "彼女の死後、エジプトはローマ帝国の属州となりました。" },
+            { name: "聖徳太子", imgs: { default: "shotoku.jpg", win: "shotoku.jpg", lose: "shotoku.jpg" }, msg: "私が制定した、日本最初の憲法といえば何？", answers: ["十七条憲法", "17条憲法", "じゅうななじょうけんぽう"], info: "604年制定。和の精神を説いたものです。" }
         ]}
     };
 
@@ -156,15 +151,15 @@
         showScreen('era-screen');
     }
 
-    // --- ゲーム開始処理（ランダム30問選出） ---
+    // --- ゲーム開始処理（ランダム30問選出版） ---
     function startGame(eraKey) {
         let allQuestions = [...allQuizData[eraKey].questions];
-        // フィッシャー・イェーツのシャッフル
+        // シャッフル
         for (let i = allQuestions.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [allQuestions[i], allQuestions[j]] = [allQuestions[j], allQuestions[i]];
         }
-        // 30問選出（データが足りない場合はある分だけ）
+        // 30問制限
         const selectedQuestions = allQuestions.slice(0, 30);
         currentEraData = { color: allQuizData[eraKey].color, questions: selectedQuestions };
 
@@ -204,18 +199,14 @@
         const data = currentEraData.questions[currentIdx];
         const imgEl = document.getElementById('bg-image');
         imgEl.style.opacity = 0;
-        setTimeout(() => { 
-            // 肖像画画像は適宜パスを合わせてください
-            imgEl.src = data.imgs[type] || data.imgs['default']; 
-            imgEl.style.opacity = 1; 
-        }, 150);
+        // 画像がない場合のデバッグ用対策
+        setTimeout(() => { imgEl.src = data.imgs[type]; imgEl.style.opacity = 1; }, 150);
     }
 
     function startTimerLoop() {
         if (timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(() => {
-            timeLeft -= 1; 
-            updateTimerUI();
+            timeLeft -= 1; updateTimerUI();
             if (timeLeft <= 0) finishQuestion('timeout');
         }, 1000);
     }
@@ -224,29 +215,10 @@
         const el = document.getElementById('timer-text');
         el.innerText = `残り ${Math.max(0, timeLeft)}秒`;
         el.style.color = timeLeft <= 5 ? "#ff4444" : "#fff";
-
-        // ★追加：残り10秒でヒント表示
-        if (timeLeft <= 10 && timeLeft > 0 && !isLocked) {
-            showHint();
-        }
+        // 残り10秒でヒント表示などの拡張もここで行えます
     }
 
-    // --- ヒント表示（頭文字抽出） ---
-    function showHint() {
-        const data = currentEraData.questions[currentIdx];
-        const dialogue = document.getElementById('dialogue');
-        if (!dialogue.innerHTML.includes('助け舟')) {
-            const kanaAnswer = data.answers.find(a => /^[ぁ-んー]*$/.test(a)) || data.answers[0];
-            const firstChar = kanaAnswer.charAt(0);
-            dialogue.innerHTML += `
-                <div id="hint-msg" style="margin-top:10px; color:var(--gold); font-size:1rem; border-top:1px dashed rgba(212,175,55,0.5); padding-top:5px; animation: fadeIn 0.5s;">
-                    <strong>${data.name}：</strong> ...「${firstChar}」から始まる言葉だ...（助け舟）
-                </div>
-            `;
-        }
-    }
-
-    // --- 回答チェック（5秒ペナルティ） ---
+    // --- 回答チェック（ペナルティ付き） ---
     function checkAttempt() {
         if (isLocked || timeLeft <= 0) return;
         const data = currentEraData.questions[currentIdx];
@@ -259,7 +231,7 @@
             finishQuestion('correct');
         } else {
             isLocked = true; 
-            timeLeft -= 5; // ペナルティ
+            timeLeft -= 5; // ペナルティ5秒
             updateTimerUI();
             document.body.classList.add('wrong-flash');
             changePortrait('lose');
@@ -287,13 +259,13 @@
         if (result === 'correct') {
             document.getElementById('dialogue').innerHTML = `
                 <span style="color:#4caf50; font-size:1.2rem;">【 正解 】</span><br>
-                <strong>${data.name}：</strong> 見事だ！答えは「${correctAnswer}」であったな。
+                <strong>${data.name}：</strong> 見事だ！答えは「${correctAnswer}」であった。
             `;
             changePortrait('win');
         } else {
             const msg = (result === 'timeout') ? "時は満ちた..." : "修行が足りぬようだな。";
             document.getElementById('dialogue').innerHTML = `
-                <span style="color:#f44336; font-size:1.2rem;">【 ${result === 'timeout' ? '終了' : '残念'} 】</span><br>
+                <span style="color:#f44336; font-size:1.2rem;">【 ${result === 'timeout' ? '時間切れ' : '残念'} 】</span><br>
                 <strong>${data.name}：</strong> ${msg}<br>
                 <span style="color:var(--gold);">正解は「${correctAnswer}」だ。</span>
             `;
@@ -320,11 +292,12 @@
     }
 
     function getTitle(score, correctCount, totalCount) {
-        if (totalCount === 0) return "農民";
-        const ratio = correctCount / totalCount;
-        if (ratio >= 1.0) return "歴史の語り部";
-        if (ratio >= 0.8) return "知略の将軍";
-        if (ratio >= 0.5) return "歴戦の侍";
+        const perfectScorePossible = totalCount * 2500;
+        if (totalCount === 0) return "迷い込んだ農民";
+        const ratio = score / perfectScorePossible;
+        if (correctCount === totalCount && ratio > 0.8) return "神速の聖人";
+        if (correctCount === totalCount) return "知略の将軍";
+        if (correctCount >= totalCount / 2) return "歴戦の侍";
         return "修行中の身";
     }
 
@@ -343,11 +316,11 @@
     }
 
     function saveAndDisplayRanking(myTitle) {
-        let ranking = JSON.parse(localStorage.getItem('historyRankingFinal') || '[]');
+        let ranking = JSON.parse(localStorage.getItem('historyQuizRankingV4') || '[]');
         ranking.push({ name: playerName, score: totalScore, title: myTitle });
         ranking.sort((a, b) => b.score - a.score);
         ranking = ranking.slice(0, 5);
-        localStorage.setItem('historyRankingFinal', JSON.stringify(ranking));
+        localStorage.setItem('historyQuizRankingV4', JSON.stringify(ranking));
 
         const listEl = document.getElementById('ranking-list');
         listEl.innerHTML = `<tr><th>位</th><th>名 (称号)</th><th>点</th></tr>`;
