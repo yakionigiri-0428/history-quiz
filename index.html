@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI歴史肖像画クイズ - 決定版</title>
+    <title>戦国肖像画クイズ - 30問選抜</title>
     <style>
         :root {
             --gold: #d4af37;
@@ -85,8 +85,7 @@
 
     <div id="era-screen" class="screen" style="justify-content: center; align-items: center;">
         <h2 style="color:#fff;">戦場を選ぶ、<span id="display-player-name"></span>殿</h2>
-        <button class="menu-btn" onclick="startGame('sengoku')" style="margin-bottom:15px;">戦国・江戸</button>
-        <button class="menu-btn" onclick="startGame('ancient')">古代・中世</button>
+        <button class="menu-btn" onclick="startGame('sengoku')" style="margin-bottom:15px;">戦国時代（30問）</button>
     </div>
 
     <div id="game-screen" class="screen">
@@ -118,17 +117,42 @@
     </div>
 
 <script>
-    // 問題データ（ここに200問まで追加可能）
     const allQuizData = {
-        sengoku: { color: "#e74c3c", questions: [
-            { name: "織田信長", imgs: { default: "nobunaga.jpg", win: "nobunaga_win.jpg", lose: "nobunaga_lose.jpg" }, msg: "「楽市楽座」を最初に行った城下町はどこか？", answers: ["岐阜", "岐阜城", "ぎふ"], info: "1567年、信長は「岐阜」から独占権を撤廃する「楽市楽座」を開始。" },
-            { name: "徳川家康", imgs: { default: "ieyasu.jpg", win: "ieyasu_win.jpg", lose: "ieyasu_lose.jpg" }, msg: "江戸幕府が開かれたのは西暦何年か？", answers: ["1603", "1603年"], info: "1603年、家康は征夷大将軍に任命され、江戸に幕府を開きました。" },
-            { name: "豊臣秀吉", imgs: { default: "hideyoshi.jpg", win: "hideyoshi_win.jpg", lose: "hideyoshi_lose.jpg" }, msg: "私が天下統一の拠点として築いた、黄金の茶室でも有名な城は？", answers: ["大坂城", "大阪城", "おおさかじょう"], info: "1583年から築城。難攻不落の巨城として知られました。" }
-        ]},
-        ancient: { color: "#3498db", questions: [
-            { name: "クレオパトラ", imgs: { default: "cleopatra.jpg", win: "cleopatra_win.jpg", lose: "cleopatra_lose.jpg" }, msg: "私の死後、エジプトを支配した帝国はどこ？", answers: ["ローマ", "ローマ帝国", "ろーま"], info: "彼女の死後、エジプトはローマ帝国の属州となりました。" },
-            { name: "聖徳太子", imgs: { default: "shotoku.jpg", win: "shotoku.jpg", lose: "shotoku.jpg" }, msg: "私が制定した、日本最初の憲法といえば何？", answers: ["十七条憲法", "17条憲法", "じゅうななじょうけんぽう"], info: "604年制定。和の精神を説いたものです。" }
-        ]}
+        sengoku: { 
+            color: "#e74c3c", 
+            questions: [
+                { name: "織田信長", imgs: { default: "nobunaga.jpg", win: "nobunaga_win.jpg", lose: "nobunaga_lose.jpg" }, msg: "私が足利義昭を追放し、室町幕府を実質的に滅亡させたのは西暦何年？", answers: ["1573", "1573年"], info: "これにより戦国時代は新たな局面へ向かいました。" },
+                { name: "明智光秀", imgs: { default: "mitsuhide.jpg", win: "mitsuhide_win.jpg", lose: "mitsuhide_lose.jpg" }, msg: "私が信長を討った後、山崎の戦いで秀吉に敗れるまでを指す言葉は？", answers: ["三日天下", "みっかてんか"], info: "実際には11日間ほどでしたが、短命な政権の代名詞となりました。" },
+                { name: "豊臣秀吉", imgs: { default: "hideyoshi.jpg", win: "hideyoshi_win.jpg", lose: "hideyoshi_lose.jpg" }, msg: "私が主君・信長の仇を討つために、備中高松城から驚異的な速さで引き返したことは？", answers: ["中国大返し", "ちゅうごくおおがえし"], info: "約200kmをわずか数日で移動したと言われています。" },
+                { name: "柴田勝家", imgs: { default: "katsuie.jpg", win: "katsuie_win.jpg", lose: "katsuie_lose.jpg" }, msg: "賤ヶ岳の戦いで秀吉に敗れた際、私と共に最期を遂げた信長の妹は？", answers: ["お市", "お市の方", "おいち"], info: "戦国一の美女と謳われた女性でした。" },
+                { name: "竹中半兵衛", imgs: { default: "hanbei.jpg", win: "hanbei_win.jpg", lose: "hanbei_lose.jpg" }, msg: "秀吉に仕えた軍師「両兵衛」とは、私と誰のこと？", answers: ["黒田官兵衛", "黒田孝高", "くろだかんべえ"], info: "天才軍師二人が秀吉の天下取りを支えました。" },
+                { name: "石田三成", imgs: { default: "mitsunari.jpg", win: "mitsunari_win.jpg", lose: "mitsunari_lose.jpg" }, msg: "私が掲げた、一人が万人のために、万人が一人のために尽くせば天下は良くなるという意味の旗印は？", answers: ["大一大万大吉", "だいいちだいまんだいきち"], info: "理想の社会を願った独特なデザインの紋章です。" },
+                { name: "真田昌幸", imgs: { default: "masayuki.jpg", win: "masayuki_win.jpg", lose: "masayuki_lose.jpg" }, msg: "徳川の大軍を二度にわたって退けた、私の本拠地である城は？", answers: ["上田城", "うえだじょう"], info: "少数の兵で大軍を翻弄した築城の名手でもあります。" },
+                { name: "上杉謙信", imgs: { default: "kenshin.jpg", win: "kenshin_win.jpg", lose: "kenshin_lose.jpg" }, msg: "私が武田信玄へ、敵対関係にありながら送り届けたとされる物資は何？", answers: ["塩", "しお"], info: "「敵に塩を送る」という言葉の語源となった逸話です。" },
+                { name: "武田信玄", imgs: { default: "shingen.jpg", win: "shingen_win.jpg", lose: "shingen_lose.jpg" }, msg: "私が開発し、甲斐の国を豊かにした日本初の本格的な治水堤防の名前は？", answers: ["信玄堤", "しんげんづつみ"], info: "氾濫を繰り返す釜無川を制御し、新田開発を可能にしました。" },
+                { name: "今川義元", imgs: { default: "yoshimoto.jpg", win: "yoshimoto_win.jpg", lose: "yoshimoto_lose.jpg" }, msg: "私が討ち取られた「桶狭間の戦い」の際、私が目指していた場所はどこ？", answers: ["京都", "上洛", "きょうと"], info: "天下に号令をかけるため、大軍を率いて西上していました。" },
+                { name: "斎藤道三", imgs: { default: "dosan.jpg", win: "dosan_win.jpg", lose: "dosan_lose.jpg" }, msg: "私が主臣を追放して美濃を奪ったように、下の者が上の者を倒す風潮を何という？", answers: ["下剋上", "げこくじょう"], info: "戦国時代の社会風潮を象徴する言葉です。" },
+                { name: "毛利元就", imgs: { default: "motonari.jpg", win: "motonari_win.jpg", lose: "motonari_lose.jpg" }, msg: "私が1555年、厳島の戦いで破った周防の実力者は誰？", answers: ["陶晴賢", "すえはるたか", "陶隆房"], info: "安芸の国人領主から中国地方の覇者へ駆け上がる転機となりました。" },
+                { name: "伊達政宗", imgs: { default: "masamune.jpg", win: "masamune_win.jpg", lose: "masamune_lose.jpg" }, msg: "私が小田原参陣の際、秀吉に覚悟を示すために着ていった装束の色は？", answers: ["白", "白色", "しろ"], info: "死に装束で現れ、秀吉を驚かせました。" },
+                { name: "北条氏康", imgs: { default: "ujiyasu.jpg", win: "ujiyasu_win.jpg", lose: "ujiyasu_lose.jpg" }, msg: "私が夜襲を仕掛けて大逆転勝利を収めた、日本三大夜戦の一つは？", answers: ["河越夜戦", "かわごえやせん"], info: "わずか10分の1の兵力で連合軍を破りました。" },
+                { name: "大友宗麟", imgs: { default: "sorin.jpg", win: "sorin_win.jpg", lose: "sorin_lose.jpg" }, msg: "私がポルトガルから導入し、門司城の戦いなどで使用した大砲の通称は？", answers: ["国崩し", "くにくずし"], info: "その威力は凄まじく、城壁を一撃で破壊したと言われます。" },
+                { name: "島津義弘", imgs: { default: "yoshihiro.jpg", win: "yoshihiro_win.jpg", lose: "yoshihiro_lose.jpg" }, msg: "関ヶ原の戦いでの敗走時、私が敵軍の正面を突破して逃げた戦法を何という？", answers: ["島津の退き口", "しまづののきぐち"], info: "世界戦術史上でも稀に見る壮絶な撤退戦です。" },
+                { name: "長宗我部元親", imgs: { default: "motochika.jpg", win: "motochika_win.jpg", lose: "motochika_lose.jpg" }, msg: "私が四国平定のために用いた、普段は農民、戦時は兵士となる独自の兵制は？", answers: ["一領具足", "いちりょうぐそく"], info: "常に武装を傍らに置く、屈強な兵士集団を育てました。" },
+                { name: "朝倉義景", imgs: { default: "yoshikage.jpg", win: "yoshikage_win.jpg", lose: "yoshikage_lose.jpg" }, msg: "私が本拠地とした、京都のような華やかな文化が栄えた越前の地名は？", answers: ["一乗谷", "いちじょうだに"], info: "信長に滅ぼされるまで、北陸の小京都として繁栄しました。" },
+                { name: "浅井長政", imgs: { default: "nagamasa.jpg", win: "nagamasa_win.jpg", lose: "nagamasa_lose.jpg" }, msg: "私が信長との同盟を破棄してまで守ろうとした、長年の盟友である家系は？", answers: ["朝倉氏", "朝倉家", "あさくら"], info: "信長か朝倉か、苦渋の決断の末に義を貫きました。" },
+                { name: "松永久秀", imgs: { default: "hisahide.jpg", win: "hisahide_win.jpg", lose: "hisahide_lose.jpg" }, msg: "私が信長から欲しがられたものの、拒絶して爆死したとされる茶器の名は？", answers: ["平蜘蛛", "ひらぐも"], info: "名器と共に散るという、強烈な最期を残しました。" },
+                { name: "本多忠勝", imgs: { default: "tadakatsu.jpg", win: "tadakatsu_win.jpg", lose: "tadakatsu_lose.jpg" }, msg: "私が戦場で愛用した、穂先に止まった蜻蛉が切れたという伝説を持つ槍は？", answers: ["蜻蛉切", "とんぼぎり"], info: "天下三名槍の一つに数えられます。" },
+                { name: "真田幸村", imgs: { default: "yukimura.jpg", win: "yukimura_win.jpg", lose: "yukimura_lose.jpg" }, msg: "大坂夏の陣での私の働きを称えた言葉は「日本一の〇〇」？", answers: ["兵", "つわもの", "ひのもといちのつわもの"], info: "家康の首に最も迫った男として語り継がれています。" },
+                { name: "黒田官兵衛", imgs: { default: "kanbei.jpg", win: "kanbei_win.jpg", lose: "kanbei_lose.jpg" }, msg: "信長に裏切りを疑われ、有岡城の土牢に幽閉された私の当時の主君は？", answers: ["荒木村重", "あらきむらしげ"], info: "この幽閉生活により、足が不自由になったと言われます。" },
+                { name: "山内一豊", imgs: { default: "kazutoyo.jpg", win: "kazutoyo_win.jpg", lose: "kazutoyo_lose.jpg" }, msg: "家康に評価されるきっかけとなった、妻が嫁入り道具の金をはたいて買った物は？", answers: ["馬", "名馬", "うま"], info: "「内助の功」の最も有名なエピソードです。" },
+                { name: "大谷吉継", imgs: { default: "yoshitsugu.jpg", win: "yoshitsugu_win.jpg", lose: "yoshitsugu_lose.jpg" }, msg: "関ヶ原にて、病を押して石田三成との友情のために参戦した武将は？", answers: ["大谷吉継", "おおたによしつぐ"], info: "三成の無謀さを知りつつも、最後まで支えました。" },
+                { name: "宇喜多秀家", imgs: { default: "hideie.jpg", win: "hideie_win.jpg", lose: "hideie_lose.jpg" }, msg: "秀吉の寵愛を受け、五大老の最年少メンバーとして備前を治めたのは？", answers: ["宇喜多秀家", "うきたひでいえ"], info: "関ヶ原後、八丈島へ流され長寿を全うしました。" },
+                { name: "直江兼続", imgs: { default: "kanetsugu.jpg", win: "kanetsugu_win.jpg", lose: "kanetsugu_lose.jpg" }, msg: "家康の無理難題に対し、真っ向から反論して激怒させた文書の通称は？", answers: ["直江状", "なおえじょう"], info: "これが関ヶ原の戦いへ至るきっかけの一つとなりました。" },
+                { name: "前田利家", imgs: { default: "toshiie.jpg", win: "toshiie_win.jpg", lose: "toshiie_lose.jpg" }, msg: "私が信長の下で活躍した際の異名「槍の〇〇」とは？", answers: ["又左", "またざ"], info: "槍の名手として鳴らし、後に加賀百万石の祖となりました。" },
+                { name: "足利義輝", imgs: { default: "yoshiteru.jpg", win: "yoshiteru_win.jpg", lose: "yoshiteru_lose.jpg" }, msg: "剣豪将軍と呼ばれ、襲撃の際も自ら刀を振るって戦った第13代将軍は？", answers: ["足利義輝", "あしかがよしてる"], info: "塚原卜伝から剣術を学んだと言われています。" },
+                { name: "加藤清正", imgs: { default: "kiyomasa.jpg", win: "kiyomasa_win.jpg", lose: "kiyomasa_lose.jpg" }, msg: "朝鮮出兵での活躍から「虎退治」の伝説を持ち、熊本城を築いたのは？", answers: ["加藤清正", "かとうきよまさ"], info: "豊臣家への忠誠心と築城技術は超一流でした。" }
+            ]
+        }
     };
 
     let playerName = "";
@@ -151,17 +175,23 @@
         showScreen('era-screen');
     }
 
-    // --- ゲーム開始処理（ランダム30問選出版） ---
+    // --- ゲーム開始処理（常に30問ランダム選出） ---
     function startGame(eraKey) {
-        let allQuestions = [...allQuizData[eraKey].questions];
-        // シャッフル
-        for (let i = allQuestions.length - 1; i > 0; i--) {
+        let pool = [...allQuizData[eraKey].questions];
+        
+        // シャッフル（Fisher-Yates法）
+        for (let i = pool.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [allQuestions[i], allQuestions[j]] = [allQuestions[j], allQuestions[i]];
+            [pool[i], pool[j]] = [pool[j], pool[i]];
         }
-        // 30問制限
-        const selectedQuestions = allQuestions.slice(0, 30);
-        currentEraData = { color: allQuizData[eraKey].color, questions: selectedQuestions };
+        
+        // 30問制限（もし問題数が30未満なら全問出題）
+        const selectedQuestions = pool.slice(0, 30);
+        
+        currentEraData = { 
+            color: allQuizData[eraKey].color, 
+            questions: selectedQuestions 
+        };
 
         document.documentElement.style.setProperty('--era-color', currentEraData.color);
         currentIdx = 0; totalScore = 0; correctCount = 0;
@@ -199,8 +229,11 @@
         const data = currentEraData.questions[currentIdx];
         const imgEl = document.getElementById('bg-image');
         imgEl.style.opacity = 0;
-        // 画像がない場合のデバッグ用対策
-        setTimeout(() => { imgEl.src = data.imgs[type]; imgEl.style.opacity = 1; }, 150);
+        setTimeout(() => { 
+            // 実際の画像パスがない場合はプレースホルダや背景色に置換可能
+            imgEl.src = data.imgs[type]; 
+            imgEl.style.opacity = 1; 
+        }, 150);
     }
 
     function startTimerLoop() {
@@ -215,10 +248,8 @@
         const el = document.getElementById('timer-text');
         el.innerText = `残り ${Math.max(0, timeLeft)}秒`;
         el.style.color = timeLeft <= 5 ? "#ff4444" : "#fff";
-        // 残り10秒でヒント表示などの拡張もここで行えます
     }
 
-    // --- 回答チェック（ペナルティ付き） ---
     function checkAttempt() {
         if (isLocked || timeLeft <= 0) return;
         const data = currentEraData.questions[currentIdx];
@@ -231,7 +262,7 @@
             finishQuestion('correct');
         } else {
             isLocked = true; 
-            timeLeft -= 5; // ペナルティ5秒
+            timeLeft -= 5; 
             updateTimerUI();
             document.body.classList.add('wrong-flash');
             changePortrait('lose');
@@ -246,14 +277,11 @@
         }
     }
 
-    // --- クイズ終了時の処理（正解表示版） ---
     function finishQuestion(result) {
         clearInterval(timerInterval); 
         isLocked = true;
         const data = currentEraData.questions[currentIdx];
         document.getElementById('bg-image').style.animationPlayState = 'paused';
-        document.body.classList.remove('wrong-flash');
-
         const correctAnswer = data.answers[0];
 
         if (result === 'correct') {
@@ -293,7 +321,6 @@
 
     function getTitle(score, correctCount, totalCount) {
         const perfectScorePossible = totalCount * 2500;
-        if (totalCount === 0) return "迷い込んだ農民";
         const ratio = score / perfectScorePossible;
         if (correctCount === totalCount && ratio > 0.8) return "神速の聖人";
         if (correctCount === totalCount) return "知略の将軍";
@@ -316,11 +343,11 @@
     }
 
     function saveAndDisplayRanking(myTitle) {
-        let ranking = JSON.parse(localStorage.getItem('historyQuizRankingV4') || '[]');
+        let ranking = JSON.parse(localStorage.getItem('historyQuizRankingV5') || '[]');
         ranking.push({ name: playerName, score: totalScore, title: myTitle });
         ranking.sort((a, b) => b.score - a.score);
         ranking = ranking.slice(0, 5);
-        localStorage.setItem('historyQuizRankingV4', JSON.stringify(ranking));
+        localStorage.setItem('historyQuizRankingV5', JSON.stringify(ranking));
 
         const listEl = document.getElementById('ranking-list');
         listEl.innerHTML = `<tr><th>位</th><th>名 (称号)</th><th>点</th></tr>`;
