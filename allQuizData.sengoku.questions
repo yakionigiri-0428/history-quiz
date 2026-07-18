@@ -1,118 +1,367 @@
-// 戦国・江戸セレクション（追加分）
-[
-    { 
-        name: "豊臣秀吉", 
-        prompt: "A historical portrait of Toyotomi Hideyoshi, Japanese regent, colorful samurai armor, smiling slightly, vibrant traditional background",
-        msg: "私が天下統一の足がかりとして、大阪に築いた日本最大級の城は何？", 
-        answers: ["大坂城", "大阪城", "おおさかじょう"], 
-        info: "1583年から築城を開始。当時は「大坂」と表記されていました。" 
-    },
-    { 
-        name: "明智光秀", 
-        prompt: "A serious portrait of Akechi Mitsuhide, samurai commander, light blue armor, calm but cold expression, rainy Kyoto background",
-        msg: "1582年、私が主君・織田信長を襲撃した事件を「何の変」という？", 
-        answers: ["本能寺の変", "ほんのうじのへん"], 
-        info: "「敵は本能寺にあり」という言葉で有名。この後「三日天下」となりました。" 
-    },
-    { 
-        name: "上杉謙信", 
-        prompt: "Portrait of Uesugi Kenshin, 'The Dragon of Echigo', wearing a white hooded cowl over armor, spiritual and fierce gaze",
-        msg: "武田信玄と5回にわたって戦った、信州の地名はどこ？", 
-        answers: ["川中島", "かわなかじま"], 
-        info: "北信濃の支配権を巡る激戦。特に4回目の戦いが最も激しかったと言われます。" 
-    },
-    { 
-        name: "武田信玄", 
-        prompt: "Portrait of Takeda Shingen, 'The Tiger of Kai', iconic red armor with white mane helmet, holding a war fan (gunbai)",
-        msg: "私の軍旗に記された、孫子の言葉から引用された四字熟語といえば？", 
-        answers: ["風林火山", "ふうりんかざん"], 
-        info: "疾きこと風の如く、徐かなること林の如く、侵掠すること火の如く、動かざること山の如し。" 
-    },
-    { 
-        name: "伊達政宗", 
-        prompt: "Portrait of Date Masamune, 'One-Eyed Dragon', black armor with a large gold crescent moon crest on helmet, eye patch",
-        msg: "私が現在の宮城県に築いた、仙台藩の拠点は何城？", 
-        answers: ["仙台城", "せんだいじょう", "青葉城"], 
-        info: "断崖絶壁に守られた要塞。別名「青葉城」とも呼ばれます。" 
-    },
-    { 
-        name: "真田幸村", 
-        prompt: "Portrait of Sanada Yukimura, 'The Crimson Demon of War', all-red armor with antlers on helmet, heroic expression",
-        msg: "大坂冬の陣で、私が大坂城の南側に築いた出城（砦）の名前は？", 
-        answers: ["真田丸", "さなだまる"], 
-        info: "この砦で徳川軍を圧倒し、その武名は語り草となりました。" 
-    },
-    { 
-        name: "石田三成", 
-        prompt: "Portrait of Ishida Mitsunari, loyal commander, formal samurai robes, intellectual and stern face, Sekigahara background",
-        msg: "1600年、私が西軍を率いて徳川家康と戦った場所はどこ？", 
-        answers: ["関ヶ原", "せきがはら"], 
-        info: "天下分け目の戦い。小早川秀秋の寝返りにより西軍は敗北しました。" 
-    },
-    { 
-        name: "竹中半兵衛", 
-        prompt: "Portrait of Takenaka Hanbei, brilliant strategist, young and pale face, elegant kimono, holding a map or scroll",
-        msg: "わずか16人で奪取したといわれる、斎藤龍興の居城は何城？", 
-        answers: ["稲葉山城", "いなばやまじょう"], 
-        info: "後の岐阜城。この功績により、信長に軍師としてスカウトされました。" 
-    },
-    { 
-        name: "北条早雲", 
-        prompt: "Portrait of Hojo Soun, the first Sengoku Daimyo, older wise face, simple but strong armor, Sagami bay background",
-        msg: "下剋上の先駆けとなった私が、本拠地とした小田原の前の拠点は？", 
-        answers: ["韮山城", "にらやまじょう"], 
-        info: "伊豆を平定し、北条五代の繁栄の基礎を築きました。" 
-    },
-    { 
-        name: "毛利元就", 
-        prompt: "Portrait of Mori Motonari, wise strategist, older samurai in green robes, holding three arrows",
-        msg: "息子たちに結束を説いたとされる、有名な逸話は何？", 
-        answers: ["三本の矢", "さんぼんのや"], 
-        info: "1本では折れるが3本束ねれば折れないという、毛利一族の結束を象徴する話です。" 
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>戦国肖像画クイズ - 30問選抜</title>
+    <style>
+        :root {
+            --gold: #d4af37;
+            --dark: rgba(30, 30, 30, 0.9);
+            --correct: rgba(76, 175, 80, 0.9);
+            --wrong: rgba(244, 67, 54, 0.9);
+            --era-color: var(--gold);
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #000;
+            font-family: 'Hiragino Mincho ProN', 'MS Mincho', serif;
+            overflow: hidden;
+        }
+
+        #bg-image {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: 1; transition: opacity 0.5s;
+            animation: zoomIn 30s linear 1 forwards;
+            transform-origin: center center;
+        }
+
+        @keyframes zoomIn { from { transform: scale(1.0); } to { transform: scale(1.3); } }
+
+        .screen {
+            position: relative; z-index: 10; width: 100%; height: 100%;
+            display: none; flex-direction: column; box-sizing: border-box;
+            background: rgba(0,0,0,0.6);
+        }
+        .active { display: flex; }
+
+        #header-zone { padding: 20px; display: flex; justify-content: space-between; color: #fff; font-weight: bold; }
+        
+        #dialogue-zone {
+            margin: auto 20px 20px 20px; padding: 20px;
+            background: var(--dark); backdrop-filter: blur(8px);
+            border-left: 5px solid var(--era-color); border-radius: 8px; color: #fff;
+        }
+
+        #input-zone { padding: 0 20px 40px 20px; display: flex; flex-direction: column; align-items: center; }
+
+        input[type="text"] {
+            width: 100%; max-width: 400px; padding: 15px; font-size: 1.2rem;
+            border: none; border-radius: 30px; text-align: center; margin-bottom: 15px;
+        }
+
+        .menu-btn {
+            background: var(--era-color); color: #fff; border: none;
+            padding: 15px 30px; border-radius: 30px; font-size: 1.1rem;
+            font-weight: bold; cursor: pointer; width: 100%; max-width: 300px;
+        }
+
+        .title-display {
+            font-size: 1.5rem; color: var(--gold);
+            background: rgba(255,255,255,0.1); padding: 10px 20px;
+            border-radius: 50px; margin: 10px 0; border: 2px solid var(--gold);
+            text-shadow: 0 0 10px rgba(212,175,55,0.5); display: inline-block;
+        }
+
+        .ranking-table { width: 100%; margin-top: 15px; border-collapse: collapse; color: #fff; font-size: 0.9rem; }
+        .ranking-table th, .ranking-table td { border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px; text-align: left; }
+        .ranking-table th { background: rgba(255,255,255,0.1); }
+        .gold-rank { color: var(--gold); font-weight: bold; }
+
+        .wrong-flash { animation: screenShake 0.1s infinite; background-color: rgba(255, 0, 0, 0.2); }
+        @keyframes screenShake { 0%, 100% { transform: translate(0,0); } 25% { transform: translate(-8px,8px); } 75% { transform: translate(8px,-8px); } }
+    </style>
+</head>
+<body>
+
+    <img id="bg-image" src="" alt="">
+
+    <div id="name-screen" class="screen active" style="justify-content: center; align-items: center;">
+        <h1 style="color:var(--gold);">名乗りを上げよ</h1>
+        <input type="text" id="player-name" placeholder="名前を入力" maxlength="10">
+        <button class="menu-btn" onclick="goToEraSelect()">参戦する</button>
+    </div>
+
+    <div id="era-screen" class="screen" style="justify-content: center; align-items: center;">
+        <h2 style="color:#fff;">戦場を選ぶ、<span id="display-player-name"></span>殿</h2>
+        <button class="menu-btn" onclick="startGame('sengoku')" style="margin-bottom:15px;">戦国時代（30問）</button>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <div id="header-zone">
+            <div id="game-progress"></div>
+            <div id="current-score-display">スコア: 0</div>
+            <div id="timer-text"></div>
+        </div>
+        <div id="dialogue-zone">
+            <div id="dialogue"></div>
+            <div id="info-area" style="display:none; margin-top:10px; font-size:0.9rem; color:#ccc;"></div>
+        </div>
+        <div id="input-zone">
+            <input type="text" id="user-answer" placeholder="答えを入力" autocomplete="off">
+            <button id="submit-btn" class="menu-btn" onclick="checkAttempt()">回答する</button>
+            <button id="next-btn" class="menu-btn" style="display:none;" onclick="nextQuestion()">次へ進む</button>
+        </div>
+    </div>
+
+    <div id="result-screen" class="screen" style="justify-content: center; align-items: center; padding: 20px;">
+        <h1 style="color:var(--gold); margin-bottom:5px;">戦績発表</h1>
+        <div id="final-stats" style="color:#fff; text-align:center;"></div>
+        <div id="title-area" class="title-display"></div>
+        <div style="background:rgba(255,255,255,0.1); padding:20px; border-radius:15px; width:100%; max-width:450px; margin-top:20px;">
+            <h3 style="color:var(--gold); margin:0 0 10px 0; text-align:center;">殿堂入り（TOP 5）</h3>
+            <table class="ranking-table" id="ranking-list"></table>
+        </div>
+        <button class="menu-btn" onclick="location.reload()" style="margin-top:20px;">再挑戦する</button>
+    </div>
+
+<script>
+    const allQuizData = {
+        sengoku: { 
+            color: "#e74c3c", 
+            questions: [
+                { name: "織田信長", imgs: { default: "nobunaga.jpg", win: "nobunaga_win.jpg", lose: "nobunaga_lose.jpg" }, msg: "私が足利義昭を追放し、室町幕府を実質的に滅亡させたのは西暦何年？", answers: ["1573", "1573年"], info: "これにより戦国時代は新たな局面へ向かいました。" },
+                { name: "明智光秀", imgs: { default: "mitsuhide.jpg", win: "mitsuhide_win.jpg", lose: "mitsuhide_lose.jpg" }, msg: "私が信長を討った後、山崎の戦いで秀吉に敗れるまでを指す言葉は？", answers: ["三日天下", "みっかてんか"], info: "実際には11日間ほどでしたが、短命な政権の代名詞となりました。" },
+                { name: "豊臣秀吉", imgs: { default: "hideyoshi.jpg", win: "hideyoshi_win.jpg", lose: "hideyoshi_lose.jpg" }, msg: "私が主君・信長の仇を討つために、備中高松城から驚異的な速さで引き返したことは？", answers: ["中国大返し", "ちゅうごくおおがえし"], info: "約200kmをわずか数日で移動したと言われています。" },
+                { name: "柴田勝家", imgs: { default: "katsuie.jpg", win: "katsuie_win.jpg", lose: "katsuie_lose.jpg" }, msg: "賤ヶ岳の戦いで秀吉に敗れた際、私と共に最期を遂げた信長の妹は？", answers: ["お市", "お市の方", "おいち"], info: "戦国一の美女と謳われた女性でした。" },
+                { name: "竹中半兵衛", imgs: { default: "hanbei.jpg", win: "hanbei_win.jpg", lose: "hanbei_lose.jpg" }, msg: "秀吉に仕えた軍師「両兵衛」とは、私と誰のこと？", answers: ["黒田官兵衛", "黒田孝高", "くろだかんべえ"], info: "天才軍師二人が秀吉の天下取りを支えました。" },
+                { name: "石田三成", imgs: { default: "mitsunari.jpg", win: "mitsunari_win.jpg", lose: "mitsunari_lose.jpg" }, msg: "私が掲げた、一人が万人のために、万人が一人のために尽くせば天下は良くなるという意味の旗印は？", answers: ["大一大万大吉", "だいいちだいまんだいきち"], info: "理想の社会を願った独特なデザインの紋章です。" },
+                { name: "真田昌幸", imgs: { default: "masayuki.jpg", win: "masayuki_win.jpg", lose: "masayuki_lose.jpg" }, msg: "徳川の大軍を二度にわたって退けた、私の本拠地である城は？", answers: ["上田城", "うえだじょう"], info: "少数の兵で大軍を翻弄した築城の名手でもあります。" },
+                { name: "上杉謙信", imgs: { default: "kenshin.jpg", win: "kenshin_win.jpg", lose: "kenshin_lose.jpg" }, msg: "私が武田信玄へ、敵対関係にありながら送り届けたとされる物資は何？", answers: ["塩", "しお"], info: "「敵に塩を送る」という言葉の語源となった逸話です。" },
+                { name: "武田信玄", imgs: { default: "shingen.jpg", win: "shingen_win.jpg", lose: "shingen_lose.jpg" }, msg: "私が開発し、甲斐の国を豊かにした日本初の本格的な治水堤防の名前は？", answers: ["信玄堤", "しんげんづつみ"], info: "氾濫を繰り返す釜無川を制御し、新田開発を可能にしました。" },
+                { name: "今川義元", imgs: { default: "yoshimoto.jpg", win: "yoshimoto_win.jpg", lose: "yoshimoto_lose.jpg" }, msg: "私が討ち取られた「桶狭間の戦い」の際、私が目指していた場所はどこ？", answers: ["京都", "上洛", "きょうと"], info: "天下に号令をかけるため、大軍を率いて西上していました。" },
+                { name: "斎藤道三", imgs: { default: "dosan.jpg", win: "dosan_win.jpg", lose: "dosan_lose.jpg" }, msg: "私が主臣を追放して美濃を奪ったように、下の者が上の者を倒す風潮を何という？", answers: ["下剋上", "げこくじょう"], info: "戦国時代の社会風潮を象徴する言葉です。" },
+                { name: "毛利元就", imgs: { default: "motonari.jpg", win: "motonari_win.jpg", lose: "motonari_lose.jpg" }, msg: "私が1555年、厳島の戦いで破った周防の実力者は誰？", answers: ["陶晴賢", "すえはるたか", "陶隆房"], info: "安芸の国人領主から中国地方の覇者へ駆け上がる転機となりました。" },
+                { name: "伊達政宗", imgs: { default: "masamune.jpg", win: "masamune_win.jpg", lose: "masamune_lose.jpg" }, msg: "私が小田原参陣の際、秀吉に覚悟を示すために着ていった装束の色は？", answers: ["白", "白色", "しろ"], info: "死に装束で現れ、秀吉を驚かせました。" },
+                { name: "北条氏康", imgs: { default: "ujiyasu.jpg", win: "ujiyasu_win.jpg", lose: "ujiyasu_lose.jpg" }, msg: "私が夜襲を仕掛けて大逆転勝利を収めた、日本三大夜戦の一つは？", answers: ["河越夜戦", "かわごえやせん"], info: "わずか10分の1の兵力で連合軍を破りました。" },
+                { name: "大友宗麟", imgs: { default: "sorin.jpg", win: "sorin_win.jpg", lose: "sorin_lose.jpg" }, msg: "私がポルトガルから導入し、門司城の戦いなどで使用した大砲の通称は？", answers: ["国崩し", "くにくずし"], info: "その威力は凄まじく、城壁を一撃で破壊したと言われます。" },
+                { name: "島津義弘", imgs: { default: "yoshihiro.jpg", win: "yoshihiro_win.jpg", lose: "yoshihiro_lose.jpg" }, msg: "関ヶ原の戦いでの敗走時、私が敵軍の正面を突破して逃げた戦法を何という？", answers: ["島津の退き口", "しまづののきぐち"], info: "世界戦術史上でも稀に見る壮絶な撤退戦です。" },
+                { name: "長宗我部元親", imgs: { default: "motochika.jpg", win: "motochika_win.jpg", lose: "motochika_lose.jpg" }, msg: "私が四国平定のために用いた、普段は農民、戦時は兵士となる独自の兵制は？", answers: ["一領具足", "いちりょうぐそく"], info: "常に武装を傍らに置く、屈強な兵士集団を育てました。" },
+                { name: "朝倉義景", imgs: { default: "yoshikage.jpg", win: "yoshikage_win.jpg", lose: "yoshikage_lose.jpg" }, msg: "私が本拠地とした、京都のような華やかな文化が栄えた越前の地名は？", answers: ["一乗谷", "いちじょうだに"], info: "信長に滅ぼされるまで、北陸の小京都として繁栄しました。" },
+                { name: "浅井長政", imgs: { default: "nagamasa.jpg", win: "nagamasa_win.jpg", lose: "nagamasa_lose.jpg" }, msg: "私が信長との同盟を破棄してまで守ろうとした、長年の盟友である家系は？", answers: ["朝倉氏", "朝倉家", "あさくら"], info: "信長か朝倉か、苦渋の決断の末に義を貫きました。" },
+                { name: "松永久秀", imgs: { default: "hisahide.jpg", win: "hisahide_win.jpg", lose: "hisahide_lose.jpg" }, msg: "私が信長から欲しがられたものの、拒絶して爆死したとされる茶器の名は？", answers: ["平蜘蛛", "ひらぐも"], info: "名器と共に散るという、強烈な最期を残しました。" },
+                { name: "本多忠勝", imgs: { default: "tadakatsu.jpg", win: "tadakatsu_win.jpg", lose: "tadakatsu_lose.jpg" }, msg: "私が戦場で愛用した、穂先に止まった蜻蛉が切れたという伝説を持つ槍は？", answers: ["蜻蛉切", "とんぼぎり"], info: "天下三名槍の一つに数えられます。" },
+                { name: "真田幸村", imgs: { default: "yukimura.jpg", win: "yukimura_win.jpg", lose: "yukimura_lose.jpg" }, msg: "大坂夏の陣での私の働きを称えた言葉は「日本一の〇〇」？", answers: ["兵", "つわもの", "ひのもといちのつわもの"], info: "家康の首に最も迫った男として語り継がれています。" },
+                { name: "黒田官兵衛", imgs: { default: "kanbei.jpg", win: "kanbei_win.jpg", lose: "kanbei_lose.jpg" }, msg: "信長に裏切りを疑われ、有岡城の土牢に幽閉された私の当時の主君は？", answers: ["荒木村重", "あらきむらしげ"], info: "この幽閉生活により、足が不自由になったと言われます。" },
+                { name: "山内一豊", imgs: { default: "kazutoyo.jpg", win: "kazutoyo_win.jpg", lose: "kazutoyo_lose.jpg" }, msg: "家康に評価されるきっかけとなった、妻が嫁入り道具の金をはたいて買った物は？", answers: ["馬", "名馬", "うま"], info: "「内助の功」の最も有名なエピソードです。" },
+                { name: "大谷吉継", imgs: { default: "yoshitsugu.jpg", win: "yoshitsugu_win.jpg", lose: "yoshitsugu_lose.jpg" }, msg: "関ヶ原にて、病を押して石田三成との友情のために参戦した武将は？", answers: ["大谷吉継", "おおたによしつぐ"], info: "三成の無謀さを知りつつも、最後まで支えました。" },
+                { name: "宇喜多秀家", imgs: { default: "hideie.jpg", win: "hideie_win.jpg", lose: "hideie_lose.jpg" }, msg: "秀吉の寵愛を受け、五大老の最年少メンバーとして備前を治めたのは？", answers: ["宇喜多秀家", "うきたひでいえ"], info: "関ヶ原後、八丈島へ流され長寿を全うしました。" },
+                { name: "直江兼続", imgs: { default: "kanetsugu.jpg", win: "kanetsugu_win.jpg", lose: "kanetsugu_lose.jpg" }, msg: "家康の無理難題に対し、真っ向から反論して激怒させた文書の通称は？", answers: ["直江状", "なおえじょう"], info: "これが関ヶ原の戦いへ至るきっかけの一つとなりました。" },
+                { name: "前田利家", imgs: { default: "toshiie.jpg", win: "toshiie_win.jpg", lose: "toshiie_lose.jpg" }, msg: "私が信長の下で活躍した際の異名「槍の〇〇」とは？", answers: ["又左", "またざ"], info: "槍の名手として鳴らし、後に加賀百万石の祖となりました。" },
+                { name: "足利義輝", imgs: { default: "yoshiteru.jpg", win: "yoshiteru_win.jpg", lose: "yoshiteru_lose.jpg" }, msg: "剣豪将軍と呼ばれ、襲撃の際も自ら刀を振るって戦った第13代将軍は？", answers: ["足利義輝", "あしかがよしてる"], info: "塚原卜伝から剣術を学んだと言われています。" },
+                { name: "加藤清正", imgs: { default: "kiyomasa.jpg", win: "kiyomasa_win.jpg", lose: "kiyomasa_lose.jpg" }, msg: "朝鮮出兵での活躍から「虎退治」の伝説を持ち、熊本城を築いたのは？", answers: ["加藤清正", "かとうきよまさ"], info: "豊臣家への忠誠心と築城技術は超一流でした。" }
+            ]
+        }
+    };
+
+    let playerName = "";
+    let currentEraData = null;
+    let currentIdx = 0;
+    let totalScore = 0;
+    let correctCount = 0;
+    let timeLeft = 30;
+    let timerInterval;
+    let isLocked = false;
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
     }
-    // ...このように、人物名、プロンプト、問題をセットにして増やしていきます。
-]
-// 追加問題：戦国・武将と合戦セレクション
-[
-    { 
-        name: "島津義弘", 
-        prompt: "Fierce samurai commander Shimazu Yoshihiro, 'The Demon Shimazu', heavy armor, Sekigahara battlefield background",
-        msg: "関ヶ原の戦いで、敵陣の真っ只中を突破して退却した驚異の作戦を何という？", 
-        answers: ["島津の退き口", "のきぐち", "しまづののきぐち"], 
-        info: "敵軍を真っ向から突き抜けて薩摩へ帰還した、驚異の突破劇です。" 
-    },
-    { 
-        name: "松永久秀", 
-        prompt: "A cunning elderly daimyo Matsunaga Hisahide, holding a precious tea kettle, fire and smoke background",
-        msg: "私が信長に屈服する際、一緒に爆死させたと伝わる名茶器の名前は？", 
-        answers: ["平蜘蛛", "古天明平蜘蛛", "ひらぐも"], 
-        info: "日本史上初の「爆死」を遂げた人物（諸説あり）として有名です。" 
-    },
-    { 
-        name: "今川義元", 
-        prompt: "Aristocratic daimyo Imagawa Yoshimoto, elegant armor, rainy Okehazama forest background",
-        msg: "1560年、私が織田信長の奇襲により敗死した戦いの場所はどこ？", 
-        answers: ["桶狭間", "おけはざま"], 
-        info: "この勝利により、無名だった信長の名が全国に轟きました。" 
-    },
-    { 
-        name: "黒田官兵衛", 
-        prompt: "Brilliant strategist Kuroda Kanbei, red hood (josui), holding a map, intellectual expression",
-        msg: "秀吉の軍師として活躍した私。後に名乗った「如水」という号の由来となった言葉は？", 
-        answers: ["水のごとく", "みずのごとく"], 
-        info: "「水は自ら動き、他を動かす」という水の五則から取られました。" 
-    },
-    { 
-        name: "真田昌幸", 
-        prompt: "Cunning strategist Sanada Masayuki, father of Yukimura, layered armor, wise and tricky expression",
-        msg: "徳川の大軍を二度にわたって退けた、私の本拠地は何城？", 
-        answers: ["上田城", "うえだじょう"], 
-        info: "真田家は少ない兵力で徳川の猛攻をしのぎ、その名を高めました。" 
-    },
-    { 
-        name: "本多忠勝", 
-        prompt: "The invincible general Honda Tadakatsu, deer antler helmet, long spear Tonbogiri, imposing posture",
-        msg: "生涯57回の戦いでかすり傷一つ負わなかったといわれる私が持つ、名槍の名前は？", 
-        answers: ["蜻蛉切", "とんぼぎり"], 
-        info: "天下三名槍の一つ。止まった蜻蛉が真っ二つになったという逸話が由来です。" 
+
+    function goToEraSelect() {
+        playerName = document.getElementById('player-name').value.trim() || "名無しの権兵衛";
+        document.getElementById('display-player-name').innerText = playerName;
+        showScreen('era-screen');
     }
+
+    // --- ゲーム開始処理（常に30問ランダム選出） ---
+    function startGame(eraKey) {
+        let pool = [...allQuizData[eraKey].questions];
+        
+        // シャッフル（Fisher-Yates法）
+        for (let i = pool.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+        
+        // 30問制限（もし問題数が30未満なら全問出題）
+        const selectedQuestions = pool.slice(0, 30);
+        
+        currentEraData = { 
+            color: allQuizData[eraKey].color, 
+            questions: selectedQuestions 
+        };
+
+        document.documentElement.style.setProperty('--era-color', currentEraData.color);
+        currentIdx = 0; totalScore = 0; correctCount = 0;
+        showScreen('game-screen');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        isLocked = false;
+        const data = currentEraData.questions[currentIdx];
+        changePortrait('default');
+        document.body.classList.remove('wrong-flash');
+        document.getElementById('dialogue').innerHTML = `<strong>${data.name}：</strong><br>${data.msg}`;
+        document.getElementById('info-area').style.display = 'none';
+        document.getElementById('game-progress').innerText = `${currentIdx + 1} / ${currentEraData.questions.length}`;
+        document.getElementById('current-score-display').innerText = `スコア: ${totalScore}`;
+        
+        const input = document.getElementById('user-answer');
+        input.value = ''; input.disabled = false; input.style.display = 'block';
+        document.getElementById('submit-btn').style.display = 'block';
+        document.getElementById('next-btn').style.display = 'none';
+        
+        timeLeft = 30;
+        updateTimerUI();
+        startTimerLoop();
+        
+        const bgImg = document.getElementById('bg-image');
+        bgImg.style.animation = 'none'; bgImg.offsetHeight;
+        bgImg.style.animation = 'zoomIn 30s linear 1 forwards';
+        bgImg.style.animationPlayState = 'running';
+        setTimeout(() => input.focus(), 500);
+    }
+
+    function changePortrait(type) {
+        const data = currentEraData.questions[currentIdx];
+        const imgEl = document.getElementById('bg-image');
+        imgEl.style.opacity = 0;
+        setTimeout(() => { 
+            // 実際の画像パスがない場合はプレースホルダや背景色に置換可能
+            imgEl.src = data.imgs[type]; 
+            imgEl.style.opacity = 1; 
+        }, 150);
+    }
+
+    function startTimerLoop() {
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft -= 1; updateTimerUI();
+            if (timeLeft <= 0) finishQuestion('timeout');
+        }, 1000);
+    }
+
+    function updateTimerUI() {
+        const el = document.getElementById('timer-text');
+        el.innerText = `残り ${Math.max(0, timeLeft)}秒`;
+        el.style.color = timeLeft <= 5 ? "#ff4444" : "#fff";
+    }
+
+    function checkAttempt() {
+        if (isLocked || timeLeft <= 0) return;
+        const data = currentEraData.questions[currentIdx];
+        const ans = document.getElementById('user-answer').value.trim();
+        
+        if (data.answers.includes(ans)) {
+            correctCount++;
+            const bonus = timeLeft * 50;
+            totalScore += (1000 + bonus);
+            finishQuestion('correct');
+        } else {
+            isLocked = true; 
+            timeLeft -= 5; 
+            updateTimerUI();
+            document.body.classList.add('wrong-flash');
+            changePortrait('lose');
+            if (timeLeft <= 0) { finishQuestion('timeout'); return; }
+            setTimeout(() => {
+                document.body.classList.remove('wrong-flash');
+                changePortrait('default');
+                document.getElementById('user-answer').value = '';
+                document.getElementById('user-answer').focus();
+                isLocked = false;
+            }, 800);
+        }
+    }
+
+    function finishQuestion(result) {
+        clearInterval(timerInterval); 
+        isLocked = true;
+        const data = currentEraData.questions[currentIdx];
+        document.getElementById('bg-image').style.animationPlayState = 'paused';
+        const correctAnswer = data.answers[0];
+
+        if (result === 'correct') {
+            document.getElementById('dialogue').innerHTML = `
+                <span style="color:#4caf50; font-size:1.2rem;">【 正解 】</span><br>
+                <strong>${data.name}：</strong> 見事だ！答えは「${correctAnswer}」であった。
+            `;
+            changePortrait('win');
+        } else {
+            const msg = (result === 'timeout') ? "時は満ちた..." : "修行が足りぬようだな。";
+            document.getElementById('dialogue').innerHTML = `
+                <span style="color:#f44336; font-size:1.2rem;">【 ${result === 'timeout' ? '時間切れ' : '残念'} 】</span><br>
+                <strong>${data.name}：</strong> ${msg}<br>
+                <span style="color:var(--gold);">正解は「${correctAnswer}」だ。</span>
+            `;
+            changePortrait('lose');
+        }
+
+        document.getElementById('info-area').innerHTML = `
+            <div style="border-bottom:1px solid rgba(255,255,255,0.2); padding-bottom:5px; margin-bottom:5px;">
+                <strong style="color:var(--gold);">正解：${correctAnswer}</strong>
+            </div>
+            <strong>解説：</strong> ${data.info}
+        `;
+        
+        document.getElementById('info-area').style.display = 'block';
+        document.getElementById('user-answer').style.display = 'none';
+        document.getElementById('submit-btn').style.display = 'none';
+        document.getElementById('next-btn').style.display = 'block';
+    }
+
+    function nextQuestion() {
+        currentIdx++;
+        if (currentIdx < currentEraData.questions.length) loadQuestion();
+        else showFinalResult();
+    }
+
+    function getTitle(score, correctCount, totalCount) {
+        const perfectScorePossible = totalCount * 2500;
+        const ratio = score / perfectScorePossible;
+        if (correctCount === totalCount && ratio > 0.8) return "神速の聖人";
+        if (correctCount === totalCount) return "知略の将軍";
+        if (correctCount >= totalCount / 2) return "歴戦の侍";
+        return "修行中の身";
+    }
+
+    function showFinalResult() {
+        showScreen('result-screen');
+        document.getElementById('bg-image').style.opacity = 0.3;
+        const totalCount = currentEraData.questions.length;
+        const myTitle = getTitle(totalScore, correctCount, totalCount);
+        document.getElementById('final-stats').innerHTML = `
+            <p>${playerName}殿</p>
+            <span style="font-size:2.5rem; color:var(--gold); font-weight:bold;">${totalScore.toLocaleString()} 点</span>
+            <p>（正解数: ${correctCount} / ${totalCount}）</p>
+        `;
+        document.getElementById('title-area').innerText = `称号：${myTitle}`;
+        saveAndDisplayRanking(myTitle);
+    }
+
+    function saveAndDisplayRanking(myTitle) {
+        let ranking = JSON.parse(localStorage.getItem('historyQuizRankingV5') || '[]');
+        ranking.push({ name: playerName, score: totalScore, title: myTitle });
+        ranking.sort((a, b) => b.score - a.score);
+        ranking = ranking.slice(0, 5);
+        localStorage.setItem('historyQuizRankingV5', JSON.stringify(ranking));
+
+        const listEl = document.getElementById('ranking-list');
+        listEl.innerHTML = `<tr><th>位</th><th>名 (称号)</th><th>点</th></tr>`;
+        ranking.forEach((entry, index) => {
+            listEl.innerHTML += `
+                <tr>
+                    <td class="${index === 0 ? 'gold-rank' : ''}">${index + 1}</td>
+                    <td>${entry.name} <span style="font-size:0.8em; color:#bbb;">(${entry.title})</span></td>
+                    <td>${entry.score.toLocaleString()}</td>
+                </tr>`;
+        });
+    }
+
+    document.getElementById('user-answer').addEventListener('keypress', (e) => { if (e.key === 'Enter') checkAttempt(); });
+</script>
+</body>
+</html>
